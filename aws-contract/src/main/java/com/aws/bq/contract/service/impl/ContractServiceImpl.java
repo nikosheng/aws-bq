@@ -15,7 +15,7 @@ import java.util.List;
  * @author: jiasfeng
  * @Date: 8/5/2018
  */
-@Service
+@Service("contractService")
 public class ContractServiceImpl implements IContractService {
     @Autowired
     private IContractDAO contractDAO;

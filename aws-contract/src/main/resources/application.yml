@@ -1,5 +1,5 @@
 server:
-  port: 8081
+  port: 8080
 
 #TODO: figure out why I need this here and in bootstrap.yml
 spring:
@@ -14,6 +14,9 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
+
+ribbon:
+  ServerListRefreshInterval: 1000
 
 endpoints:
   health:
