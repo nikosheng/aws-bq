@@ -1,4 +1,4 @@
-package com.aws.bq.config;
+package com.aws.bq.zip.config;
 
 import com.amazonaws.services.ecs.AmazonECS;
 import com.amazonaws.services.ecs.AmazonECSClientBuilder;

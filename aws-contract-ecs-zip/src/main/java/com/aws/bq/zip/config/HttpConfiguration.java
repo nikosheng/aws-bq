@@ -1,4 +1,4 @@
-package com.aws.bq.config;
+package com.aws.bq.zip.config;
 
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
