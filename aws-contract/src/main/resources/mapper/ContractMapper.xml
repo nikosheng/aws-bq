@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.aws.bq.dao.IContractDAO" >
+<mapper namespace="com.aws.bq.contract.dao.IContractDAO" >
 
-  <resultMap id="BaseResultMap" type="com.aws.bq.model.Contract" >
+  <resultMap id="BaseResultMap" type="com.aws.bq.common.model.Contract" >
     <id column="contract_id" property="contractId" jdbcType="VARCHAR" />
     <result column="contract_num" property="contractNum" jdbcType="VARCHAR" />
     <result column="client_mobile" property="clientMobile" jdbcType="VARCHAR" />
@@ -33,7 +33,7 @@
     from contract
   </select>
 
-  <select id="findByContract" resultMap="BaseResultMap" parameterType="com.aws.bq.model.Contract" >
+  <select id="findByContract" resultMap="BaseResultMap" parameterType="com.aws.bq.common.model.Contract" >
     select 
     <include refid="Base_Column_List" />
     from contract
@@ -95,7 +95,7 @@
     where contract_id = #{contractId,jdbcType=VARCHAR}
   </update>
 
-  <insert id="insert" parameterType="com.aws.bq.model.Contract" >
+  <insert id="insert" parameterType="com.aws.bq.common.model.Contract" >
     insert into contract
     <trim prefix="(" suffix=")" suffixOverrides="," >
       <if test="contractId != null" >
