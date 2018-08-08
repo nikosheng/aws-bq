@@ -3,6 +3,8 @@ package com.aws.bq.zip.init;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.PutObjectResult;
 import com.amazonaws.services.s3.model.S3Object;
+import com.aws.bq.common.util.SpringUtil;
+import com.aws.bq.contract.service.impl.ContractServiceImpl;
 import com.aws.bq.zip.ecs.IECSOperation;
 import com.aws.bq.common.model.Contract;
 import com.aws.bq.common.model.ZipFileResult;
@@ -36,8 +38,6 @@ public class AppStartupRunner implements CommandLineRunner {
     @Autowired
     private IS3Operation s3ops;
     @Autowired
-    private IContractService contractService;
-    @Autowired
     private IECSOperation ecsops;
 
     @Value("${amazon.s3.bucket}")
@@ -55,6 +55,7 @@ public class AppStartupRunner implements CommandLineRunner {
 
         try {
             // 1. Search contracts with parameters in RDS
+            IContractService contractService = SpringUtil.getBean(ContractServiceImpl.class);
             List<Contract> contracts = contractService.findAll();
 
             // 2. Retrieve the S3 objects url
