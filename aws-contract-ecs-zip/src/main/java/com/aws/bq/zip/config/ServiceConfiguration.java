@@ -1,6 +1,5 @@
 package com.aws.bq.zip.config;
 
-import com.aws.bq.contract.util.SpringContextUtil;
 import com.aws.bq.contract.service.IContractService;
 import com.aws.bq.contract.service.impl.ContractServiceImpl;
 import org.springframework.context.annotation.Bean;
