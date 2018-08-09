@@ -1,28 +1,20 @@
 package com.aws.bq.contract;
 
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.amazonaws.services.ecs.AmazonECS;
 import com.amazonaws.services.ecs.AmazonECSClientBuilder;
 import com.amazonaws.services.ecs.model.*;
 import com.aws.bq.common.model.Contract;
-import com.aws.bq.common.model.vo.ContractRequestVO;
 import com.aws.bq.common.model.vo.base.MessageVO;
-import com.aws.bq.common.util.Utils;
-import com.aws.bq.contract.dao.IContractDAO;
-import com.google.common.collect.Lists;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
-
-import java.util.List;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
