@@ -37,3 +37,7 @@ amazon:
 mybatis:
   type-aliases-package: com.aws.bq.model
   mapper-locations: classpath:mapper/*.xml
+
+## Contract Management Platform
+bq:
+  contract-platform-dns: http://aws-contract-lb-1813490861.cn-northwest-1.elb.amazonaws.com.cn:8088
