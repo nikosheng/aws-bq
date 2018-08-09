@@ -58,16 +58,16 @@ public class AppStartupRunner implements CommandLineRunner, EnvironmentAware {
     @Value("${bq.contract-platform-dns}")
     private String BQ_CONTRACT_PLATFORM_DNS;
 
-    private String input;
+    private String parameters;
 
     @Override
     public void run(String... args) throws Exception {
         log.debug("[AppStartupRunner] =========> The app is running......");
-        log.info("[AppStartupRunner] =========> Input: " + input);
+        log.info("[AppStartupRunner] =========> Parameter: " + parameters);
 
         try {
             // 1. Search contracts with parameters in RDS
-            JSONObject jsonObject = JSONObject.parseObject(args[0]);
+            JSONObject jsonObject = JSONObject.parseObject(parameters);
             String jsonStr = jsonObject.toJSONString();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
@@ -104,13 +104,13 @@ public class AppStartupRunner implements CommandLineRunner, EnvironmentAware {
         } catch (Exception e) {
             log.error("[AppStartupRunner] =========> Exception:", e);
         } finally {
-//            ecsops.stopAllTask(ECS_CLUSTER_NAME, ECS_TASK_BQ_TAG);
+            ecsops.stopAllTask(ECS_CLUSTER_NAME, ECS_TASK_BQ_TAG);
         }
     }
 
     @Override
     public void setEnvironment(Environment environment) {
-        this.input = environment.getProperty("contract-env");
+        this.parameters = environment.getProperty("contract-env");
     }
 }
 
