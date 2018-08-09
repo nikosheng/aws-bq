@@ -18,6 +18,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.EnvironmentAware;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -35,7 +37,7 @@ import java.util.List;
  */
 @Component
 @Slf4j
-public class AppStartupRunner implements CommandLineRunner {
+public class AppStartupRunner implements CommandLineRunner, EnvironmentAware {
     @Autowired
     private AmazonS3 amazonS3;
     @Autowired
@@ -56,9 +58,12 @@ public class AppStartupRunner implements CommandLineRunner {
     @Value("${bq.contract-platform-dns}")
     private String BQ_CONTRACT_PLATFORM_DNS;
 
+    private String input;
+
     @Override
     public void run(String... args) throws Exception {
         log.debug("[AppStartupRunner] =========> The app is running......");
+        log.info("[AppStartupRunner] =========> Input: " + input);
 
         try {
             // 1. Search contracts with parameters in RDS
@@ -101,6 +106,11 @@ public class AppStartupRunner implements CommandLineRunner {
         } finally {
 //            ecsops.stopAllTask(ECS_CLUSTER_NAME, ECS_TASK_BQ_TAG);
         }
+    }
+
+    @Override
+    public void setEnvironment(Environment environment) {
+        this.input = environment.getProperty("contract-env");
     }
 }
 
