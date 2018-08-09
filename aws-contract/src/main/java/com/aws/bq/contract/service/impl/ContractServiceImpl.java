@@ -1,6 +1,7 @@
 package com.aws.bq.contract.service.impl;
 
 
+import com.aws.bq.common.model.vo.ContractRequestVO;
 import com.aws.bq.contract.dao.IContractDAO;
 import com.aws.bq.common.model.Contract;
 import com.aws.bq.contract.service.IContractService;
@@ -15,7 +16,7 @@ import java.util.List;
  * @author: jiasfeng
  * @Date: 8/5/2018
  */
-@Service("contractService")
+@Service
 public class ContractServiceImpl implements IContractService {
     @Autowired
     private IContractDAO contractDAO;
@@ -31,7 +32,7 @@ public class ContractServiceImpl implements IContractService {
     }
 
     @Override
-    public List<Contract> findByContract(Contract contract) {
+    public List<Contract> findByContract(ContractRequestVO contract) {
         List<Contract> contracts = contractDAO.findByContract(contract);
         return contracts.size() > 0 ? contracts : new ArrayList<>();
     }

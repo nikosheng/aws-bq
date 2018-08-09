@@ -1,5 +1,6 @@
 package com.aws.bq.zip.init;
 
+import com.alibaba.fastjson.JSONObject;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.PutObjectResult;
 import com.amazonaws.services.s3.model.S3Object;
@@ -17,10 +18,14 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -36,9 +41,9 @@ public class AppStartupRunner implements CommandLineRunner {
     @Autowired
     private IS3Operation s3ops;
     @Autowired
-    private IContractService contractService;
-    @Autowired
     private IECSOperation ecsops;
+    @Autowired
+    private RestTemplate restTemplate;
 
     @Value("${amazon.s3.bucket}")
     private String BUCKET_NAME;
@@ -55,7 +60,12 @@ public class AppStartupRunner implements CommandLineRunner {
 
         try {
             // 1. Search contracts with parameters in RDS
-            List<Contract> contracts = contractService.findAll();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
+            headers.add("Accept", MediaType.APPLICATION_JSON.toString());
+            JSONObject postData = new JSONObject();
+
+            List<Contract> contracts = new ArrayList<>();
 
             // 2. Retrieve the S3 objects url
             List<File> files = Lists.transform(contracts, new Function<Contract, File>() {

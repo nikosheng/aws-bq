@@ -14,6 +14,9 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
+  jackson:
+    time-zone: GMT+8
+    date-format: yyyy-MM-dd HH:mm:ss
 
 ribbon:
   ServerListRefreshInterval: 1000
@@ -40,3 +43,10 @@ amazon:
 mybatis:
   type-aliases-package: com.aws.bq.model
   mapper-locations: classpath:mapper/*.xml
+
+# PageHelper
+pagehelper:
+  offset-as-page-num: true
+  row-bounds-with-count: true
+  reasonable: true
+  support-methods-arguments: true

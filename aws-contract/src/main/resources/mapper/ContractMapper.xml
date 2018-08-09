@@ -33,7 +33,7 @@
     from contract
   </select>
 
-  <select id="findByContract" resultMap="BaseResultMap" parameterType="com.aws.bq.common.model.Contract" >
+  <select id="findByContract" resultMap="BaseResultMap" parameterType="com.aws.bq.common.model.vo.ContractRequestVO" >
     select 
     <include refid="Base_Column_List" />
     from contract
@@ -62,8 +62,11 @@
       <if test="directory != null" >
         and directory = #{directory,jdbcType=VARCHAR}
       </if>
-      <if test="signDate != null" >
-        and sign_date = #{signDate,jdbcType=TIMESTAMP}
+      <if test="signDateStart != null and signDateEnd != null" >
+        <![CDATA[
+        and sign_date >= #{signDateStart,jdbcType=TIMESTAMP}
+        and sign_date <= #{signDateEnd,jdbcType=TIMESTAMP}
+        ]]>
       </if>
       <if test="identityCardNum != null" >
         and identity_card_num = #{identityCardNum,jdbcType=VARCHAR}
