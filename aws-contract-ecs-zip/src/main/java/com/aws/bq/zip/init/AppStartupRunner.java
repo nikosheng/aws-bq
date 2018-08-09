@@ -77,13 +77,20 @@ public class AppStartupRunner implements CommandLineRunner, EnvironmentAware {
             String response = restTemplate.postForObject(
                     BQ_CONTRACT_PLATFORM_DNS + "/contract/search",
                     entity, String.class);
-            MessageVO<Contract> messageVO = JSONObject.parseObject(response, MessageVO.class);
+            MessageVO<JSONObject> messageVO = JSONObject.parseObject(response, MessageVO.class);
 
             // 2. Retrieve the S3 objects url
-            List<Contract> contracts = messageVO.getData();
+            List<Contract> contracts = Lists.transform(messageVO.getData(), new Function<JSONObject, Contract>() {
+                @Override
+                public Contract apply(@Nullable JSONObject jsonObject) {
+                    return jsonObject.toJavaObject(Contract.class);
+                }
+            });
+
             List<File> files = Lists.transform(contracts, new Function<Contract, File>() {
                         @Override
                         public File apply(@Nullable Contract contract) {
+                            log.info("[AppStartupRunner] =========> " + contract.getS3Bucket() + " : " + contract.getS3Key());
                             S3Object object = s3ops.getObject(contract.getS3Bucket(), contract.getS3Key());
                             S3ObjectFileVO vo = s3ops.getFileFromS3Object(object);
                             return s3ops.convertFromS3Object(object, vo.getFileName());
