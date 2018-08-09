@@ -2,11 +2,15 @@ package com.aws.bq.contract;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.amazonaws.services.ecs.AmazonECS;
+import com.amazonaws.services.ecs.AmazonECSClientBuilder;
+import com.amazonaws.services.ecs.model.*;
 import com.aws.bq.common.model.Contract;
 import com.aws.bq.common.model.vo.ContractRequestVO;
 import com.aws.bq.common.model.vo.base.MessageVO;
 import com.aws.bq.common.util.Utils;
 import com.aws.bq.contract.dao.IContractDAO;
+import com.google.common.collect.Lists;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,30 +28,7 @@ import java.util.List;
 @SpringBootTest
 public class BqContractZipApplicationTests {
     @Autowired
-    private IContractDAO contractDAO;
-    @Autowired
     private RestTemplate restTemplate;
-
-    @Test
-    public void testFind() {
-//        List<Contract> contracts = contractDAO.findAll();
-        ContractRequestVO contract = new ContractRequestVO();
-        contract.setContractNum("test");
-        List<Contract> contracts = contractDAO.findByContract(contract);
-        System.out.println(contracts.size());
-    }
-
-    @Test
-    public void testAdd() {
-        Contract contract = new Contract();
-        contract.setContractId(Utils.generateUUID());
-        contract.setContractNum("test");
-        contract.setS3Bucket("testBucket");
-        contract.setS3Key("testKey");
-        contract.setCreateTime(new java.util.Date());
-        contract.setUpdateTime(new java.util.Date());
-        int num = contractDAO.insert(contract);
-    }
 
     @Test
     public void testRestTemplate() {
@@ -63,5 +44,21 @@ public class BqContractZipApplicationTests {
                 entity, String.class);
         MessageVO<Contract> vo = JSONObject.parseObject(response, MessageVO.class);
         System.out.println();
+    }
+
+    @Test
+    public void testECS() {
+        AmazonECS client = AmazonECSClientBuilder.standard().build();
+        RunTaskRequest request = new RunTaskRequest().withCluster("default")
+                .withTaskDefinition("contract-taskdef:7")
+                .withStartedBy("bq")
+                .withOverrides(
+                        new TaskOverride().withContainerOverrides(
+                                new ContainerOverride()
+                                        .withEnvironment(
+                                                new KeyValuePair()
+                                                        .withName("contract-env")
+                                                        .withValue("{\"contractNum\": \"V10021\",\"signDateStart\": \"2018-08-01 10:50:19\",\"signDateEnd\": \"2018-08-10 10:50:19\",\"del\": 0,\"pageIndex\": 1,\"pageSize\": 10}"))));
+        RunTaskResult response = client.runTask(request);
     }
 }
