@@ -1,16 +1,16 @@
 package com.aws.bq.zip.init;
 
 import com.alibaba.fastjson.JSONObject;
-import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.PutObjectResult;
 import com.amazonaws.services.s3.model.S3Object;
 import com.aws.bq.common.model.Contract;
 import com.aws.bq.common.model.ZipFileResult;
 import com.aws.bq.common.model.vo.S3ObjectFileVO;
 import com.aws.bq.common.model.vo.base.MessageVO;
+import com.aws.bq.common.util.ECSUtils;
+import com.aws.bq.common.util.S3Utils;
+import com.aws.bq.common.util.SQSUtils;
 import com.aws.bq.common.util.Utils;
-import com.aws.bq.zip.ecs.IECSOperation;
-import com.aws.bq.zip.s3.IS3Operation;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
@@ -39,12 +39,6 @@ import java.util.List;
 @Slf4j
 public class AppStartupRunner implements CommandLineRunner, EnvironmentAware {
     @Autowired
-    private AmazonS3 amazonS3;
-    @Autowired
-    private IS3Operation s3ops;
-    @Autowired
-    private IECSOperation ecsops;
-    @Autowired
     private RestTemplate restTemplate;
 
     @Value("${amazon.s3.bucket}")
@@ -57,7 +51,10 @@ public class AppStartupRunner implements CommandLineRunner, EnvironmentAware {
     private String ECS_TASK_BQ_TAG;
     @Value("${bq.contract-platform-dns}")
     private String BQ_CONTRACT_PLATFORM_DNS;
+    @Value("${amazon.sqs.queue.url}")
+    private String MESSAGE_QUEUE_URL;
 
+    /** Environment variables */
     private String parameters;
 
     @Override
@@ -80,7 +77,8 @@ public class AppStartupRunner implements CommandLineRunner, EnvironmentAware {
             MessageVO<JSONObject> messageVO = JSONObject.parseObject(response, MessageVO.class);
 
             // 2. Retrieve the S3 objects url
-            List<Contract> contracts = Lists.transform(messageVO.getData(), new Function<JSONObject, Contract>() {
+            List<Contract> contracts = Lists.transform((List<JSONObject>) messageVO.getData(),
+                    new Function<JSONObject, Contract>() {
                 @Override
                 public Contract apply(@Nullable JSONObject jsonObject) {
                     return jsonObject.toJavaObject(Contract.class);
@@ -91,9 +89,9 @@ public class AppStartupRunner implements CommandLineRunner, EnvironmentAware {
                         @Override
                         public File apply(@Nullable Contract contract) {
                             log.info("[AppStartupRunner] =========> " + contract.getS3Bucket() + " : " + contract.getS3Key());
-                            S3Object object = s3ops.getObject(contract.getS3Bucket(), contract.getS3Key());
-                            S3ObjectFileVO vo = s3ops.getFileFromS3Object(object);
-                            return s3ops.convertFromS3Object(object, vo.getFileName());
+                            S3Object object = S3Utils.getObject(contract.getS3Bucket(), contract.getS3Key());
+                            S3ObjectFileVO vo = S3Utils.getFileFromS3Object(object);
+                            return S3Utils.convertFromS3Object(object, vo.getFileName());
                         }
                     }
             );
@@ -102,16 +100,19 @@ public class AppStartupRunner implements CommandLineRunner, EnvironmentAware {
             ZipFileResult result = Utils.zipFiles(files, generatedZipFile);
             String s3Key = ZIP_S3_PREFIX + generatedZipFile;
             if (result.isSuccess()) {
-                PutObjectResult res = s3ops.putObject(BUCKET_NAME, s3Key, generatedZipFile);
-                URL url = amazonS3.getUrl(BUCKET_NAME, s3Key);
+                PutObjectResult res = S3Utils.putObject(BUCKET_NAME, s3Key, generatedZipFile);
+                URL url = S3Utils.getUrl(BUCKET_NAME, s3Key);
                 log.debug("[AppStartupRunner] =========> Path: " + url.toString());
+                // Send url to SQS
+                log.debug("[AppStartupRunner] =========> Send Message to SQS... Queue: " + MESSAGE_QUEUE_URL);
+                SQSUtils.sendMessage(MESSAGE_QUEUE_URL, url.toString());
             } else {
                 log.error("[AppStartupRunner] =========> Unable to upload zip file to S3: ");
             }
         } catch (Exception e) {
             log.error("[AppStartupRunner] =========> Exception:", e);
         } finally {
-            ecsops.stopAllTask(ECS_CLUSTER_NAME, ECS_TASK_BQ_TAG);
+            ECSUtils.stopAllTask(ECS_CLUSTER_NAME, ECS_TASK_BQ_TAG);
         }
     }
 

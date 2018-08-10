@@ -16,5 +16,5 @@ public class MessageVO<T> {
     private Integer pageIndex;
     private Integer pageTotal;
     private Integer totalCount;
-    private List<T> data;
+    private Object data;
 }

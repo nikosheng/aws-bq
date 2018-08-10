@@ -1,7 +1,7 @@
 server:
   port: 8080
 
-#TODO: figure out why I need this here and in bootstrap.yml
+## Spring Configuration
 spring:
   application:
     name: aws-contract-ecs-zip
@@ -18,9 +18,6 @@ spring:
     time-zone: GMT+8
     date-format: yyyy-MM-dd HH:mm:ss
 
-ribbon:
-  ServerListRefreshInterval: 1000
-
 endpoints:
   health:
     sensitive: false
@@ -29,6 +26,7 @@ endpoints:
   shutdown:
     enabled: true
 
+## Amazon Configuration
 amazon:
   s3:
     bucket: bq-zhy-contract-bucket
@@ -38,15 +36,23 @@ amazon:
       name: default
     task:
       tag: bq
+  sqs:
+    queue:
+      url: https://sqs.cn-northwest-1.amazonaws.com.cn/286792376082/aws-contract-queue
 
 ## Mybatis
 mybatis:
   type-aliases-package: com.aws.bq.model
   mapper-locations: classpath:mapper/*.xml
 
-# PageHelper
+## PageHelper
 pagehelper:
   offset-as-page-num: true
   row-bounds-with-count: true
   reasonable: true
   support-methods-arguments: true
+
+## Constants
+constants:
+  page-index: 1
+  page-size: 10

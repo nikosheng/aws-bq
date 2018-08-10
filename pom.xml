@@ -22,6 +22,7 @@
         <module>aws-commons</module>
         <module>aws-contract</module>
         <module>aws-contract-ecs-zip</module>
+        <module>aws-contract-zip</module>
     </modules>
 
     <parent>

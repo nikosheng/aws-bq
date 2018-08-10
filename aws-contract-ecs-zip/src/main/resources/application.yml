@@ -32,6 +32,9 @@ amazon:
       name: default
     task:
       tag: bq
+  sqs:
+    queue:
+      url: https://sqs.cn-northwest-1.amazonaws.com.cn/286792376082/aws-contract-queue
 
 ## Mybatis
 mybatis:
