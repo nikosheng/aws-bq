@@ -14,6 +14,7 @@ import java.util.Date;
 public class ContractRequestVO {
     private String contractId;
     private String contractNum;
+    private String clientName;
     private String clientMobile;
     private String clientNum;
     private String capital;

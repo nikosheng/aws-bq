@@ -5,6 +5,7 @@
   <resultMap id="BaseResultMap" type="com.aws.bq.common.model.Contract" >
     <id column="contract_id" property="contractId" jdbcType="VARCHAR" />
     <result column="contract_num" property="contractNum" jdbcType="VARCHAR" />
+    <result column="client_name" property="clientName" jdbcType="VARCHAR" />
     <result column="client_mobile" property="clientMobile" jdbcType="VARCHAR" />
     <result column="client_num" property="clientNum" jdbcType="VARCHAR" />
     <result column="capital" property="capital" jdbcType="VARCHAR" />
@@ -22,7 +23,7 @@
   </resultMap>
 
   <sql id="Base_Column_List" >
-    contract_id, contract_num, client_mobile, client_num, capital, contract_status, contract_name, 
+    contract_id, contract_num, client_name, client_mobile, client_num, capital, contract_status, contract_name,
     directory, sign_date, identity_card_num, s3_bucket, s3_key, create_time, update_time, 
     operator, del
   </sql>
@@ -43,6 +44,9 @@
       </if>
       <if test="contractNum != null" >
         and contract_num = #{contractNum,jdbcType=VARCHAR}
+      </if>
+      <if test="clientName != null" >
+        and client_name = #{clientName,jdbcType=VARCHAR}
       </if>
       <if test="clientMobile != null" >
         and client_mobile = #{clientMobile,jdbcType=VARCHAR}
@@ -107,6 +111,9 @@
       <if test="contractNum != null" >
         contract_num,
       </if>
+      <if test="clientName != null" >
+        client_name,
+      </if>
       <if test="clientMobile != null" >
         client_mobile,
       </if>
@@ -156,6 +163,9 @@
       </if>
       <if test="contractNum != null" >
         #{contractNum,jdbcType=VARCHAR},
+      </if>
+      <if test="clientName != null" >
+        #{clientName,jdbcType=VARCHAR},
       </if>
       <if test="clientMobile != null" >
         #{clientMobile,jdbcType=VARCHAR},

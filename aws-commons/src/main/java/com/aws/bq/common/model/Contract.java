@@ -24,6 +24,11 @@ public class Contract {
     private String contractNum;
 
     /**
+     * 客户姓名
+     */
+    private String clientName;
+
+    /**
      * 客户手机
      */
     private String clientMobile;

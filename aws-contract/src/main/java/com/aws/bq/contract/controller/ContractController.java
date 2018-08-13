@@ -3,9 +3,11 @@ package com.aws.bq.contract.controller;
 import com.alibaba.fastjson.JSONObject;
 import com.amazonaws.services.ecs.model.*;
 import com.aws.bq.common.model.Contract;
+import com.aws.bq.common.model.enumeration.ContractStatusEnum;
 import com.aws.bq.common.model.vo.ContractRequestVO;
 import com.aws.bq.common.model.vo.base.MessageVO;
 import com.aws.bq.common.util.ECSUtils;
+import com.aws.bq.common.util.ExcelUtils;
 import com.aws.bq.common.util.Utils;
 import com.aws.bq.contract.service.IContractService;
 import com.aws.bq.contract.service.IPropertiesService;
@@ -13,15 +15,20 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.http.HttpStatus;
+import org.apache.http.client.utils.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.servlet.http.HttpServletResponse;
+import java.util.Date;
 import java.util.List;
 import java.util.OptionalInt;
 
@@ -66,15 +73,15 @@ public class ContractController {
 
     @RequestMapping(value = "/search", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
     @ResponseBody
-    public MessageVO search(@RequestBody ContractRequestVO contractVO) {
+    public MessageVO search(@RequestBody ContractRequestVO contractRequestVO) {
         log.info("[ContractController] =========> Search item(s) in database......");
 
         // 分页设置
-        Integer pageIndex = OptionalInt.of(contractVO.getPageIndex()).orElse(DEFAULT_PAGE_INDEX);
-        Integer pageSize = OptionalInt.of(contractVO.getPageSize()).orElse(DEFAULT_PAGE_SIZE);
+        Integer pageIndex = OptionalInt.of(contractRequestVO.getPageIndex()).orElse(DEFAULT_PAGE_INDEX);
+        Integer pageSize = OptionalInt.of(contractRequestVO.getPageSize()).orElse(DEFAULT_PAGE_SIZE);
 
         PageHelper.startPage(pageIndex, pageSize);
-        List<Contract> contracts = contractService.findByContract(contractVO);
+        List<Contract> contracts = contractService.findByContract(contractRequestVO);
         PageInfo<Contract> pageInfo = new PageInfo<>(contracts);
         MessageVO messageVO = new MessageVO();
         messageVO.setResponseCode(HttpStatus.SC_OK);
@@ -117,6 +124,46 @@ public class ContractController {
         messageVO.setResponseCode(HttpStatus.SC_OK);
         messageVO.setData(tasks);
         messageVO.setResponseMessage("Success");
+        return messageVO;
+    }
+
+    @RequestMapping(value = "/excel/export", produces = "application/json")
+    @ResponseBody
+    public MessageVO exportExcel(@RequestBody ContractRequestVO contractRequestVO, HttpServletResponse response) {
+        MessageVO messageVO = new MessageVO();
+        int totalNum = 0;
+
+        try {
+            MessageVO resultVO = search(contractRequestVO);
+            List<Contract> contracts = (List<Contract>) resultVO.getData();
+
+            ExcelUtils.ExcelVo vo = new ExcelUtils.ExcelVo();
+            vo.setFileName("合同文件清单_" + DateFormatUtils.format(new Date(), "yyyyMMddHHmmss"));
+            vo.addContentRow("合同号;客户姓名;客户手机号;客户编号;资方;合同状态;文件名;目录名;合同签署时间;身份证号".split(";"));
+            if (!CollectionUtils.isEmpty(contracts)) {
+                for (Contract contract : contracts) {
+                    vo.addContentRow(
+                            contract.getContractNum(),
+                            contract.getClientName(),
+                            contract.getClientMobile(),
+                            contract.getClientNum(),
+                            contract.getCapital(),
+                            ContractStatusEnum.from(contract.getContractStatus()).getStatusName(),
+                            contract.getContractName(),
+                            contract.getDirectory(),
+                            DateUtils.formatDate(contract.getSignDate()),
+                            contract.getIdentityCardNum());
+                    totalNum++;
+                }
+            }
+
+            ExcelUtils.exportExcel(vo, response);
+            messageVO.setTotalCount(totalNum);
+            messageVO.setResponseCode(HttpStatus.SC_OK);
+            messageVO.setResponseMessage("Success");
+        } catch (Exception e) {
+            log.error("[ContractController] ==========> Exception: ", e);
+        }
         return messageVO;
     }
 }
