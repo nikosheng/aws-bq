@@ -2,14 +2,13 @@ package com.aws.bq.contract.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.amazonaws.services.ecs.model.*;
-import com.amazonaws.services.sqs.model.Message;
 import com.aws.bq.common.model.Contract;
 import com.aws.bq.common.model.vo.ContractRequestVO;
 import com.aws.bq.common.model.vo.base.MessageVO;
 import com.aws.bq.common.util.ECSUtils;
-import com.aws.bq.common.util.SQSUtils;
 import com.aws.bq.common.util.Utils;
 import com.aws.bq.contract.service.IContractService;
+import com.aws.bq.contract.service.IPropertiesService;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import lombok.NonNull;
@@ -25,7 +24,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.List;
 import java.util.OptionalInt;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @Description:
@@ -40,8 +38,6 @@ public class ContractController {
     private int DEFAULT_PAGE_INDEX;
     @Value("${constants.page-size:10}")
     private int DEFAULT_PAGE_SIZE;
-    @Value("${amazon.sqs.queue.url}")
-    private String MESSAGE_QUEUE_URL;
     @Value("${amazon.ecs.cluster.name}")
     private String CLUSTER_NAME;
     @Value("${amazon.ecs.task.definition}")
@@ -55,6 +51,8 @@ public class ContractController {
 
     @Autowired
     private IContractService contractService;
+    @Autowired
+    private IPropertiesService propertiesService;
 
     @RequestMapping(value = "/insert", method = RequestMethod.POST)
     public void insert(@RequestBody @NonNull ContractRequestVO contractVO) {
@@ -94,8 +92,9 @@ public class ContractController {
         log.info("[ContractController] =========> Trigger zip ecs task ......");
         MessageVO messageVO = new MessageVO();
 
+        String taskDef = propertiesService.getString("task_def", "contract-zip-taskref:1");
         RunTaskRequest request = new RunTaskRequest().withCluster(CLUSTER_NAME)
-                .withTaskDefinition(TASK_DEFINITION)
+                .withTaskDefinition(taskDef)
                 .withStartedBy(TASK_TAG)
                 .withOverrides(
                         new TaskOverride().withContainerOverrides(

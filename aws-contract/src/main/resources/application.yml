@@ -36,14 +36,11 @@ amazon:
       name: default
     task:
       tag: bq
-      definition: contract-zip-taskref:4
+      definition: contract-zip-taskref:5
       container:
         name: aws-contract-zip
         key:
           contract: contract-env
-  sqs:
-    queue:
-      url: https://sqs.cn-northwest-1.amazonaws.com.cn/286792376082/aws-contract-queue
 
 ## Mybatis
 mybatis:

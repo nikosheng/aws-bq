@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.aws.bq.contract.dao.IPropertiesDAO" >
+  <resultMap id="BaseResultMap" type="com.aws.bq.common.model.SysProperty" >
+    <id column="property_id" property="propertyId" jdbcType="VARCHAR" />
+    <result column="property_key" property="propertyKey" jdbcType="VARCHAR" />
+    <result column="property_value" property="propertyValue" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="operator" property="operator" jdbcType="VARCHAR" />
+    <result column="del" property="del" jdbcType="TINYINT" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    property_id, property_key, property_value, create_time, update_time, operator, del
+  </sql>
+
+  <select id="get" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from sys_property
+    <where>
+      <if test="propertyId != null" >
+        and property_id = #{propertyId,jdbcType=VARCHAR}
+      </if>
+    </where>
+  </select>
+</mapper>
