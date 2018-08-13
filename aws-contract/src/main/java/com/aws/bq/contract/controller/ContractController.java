@@ -1,12 +1,15 @@
 package com.aws.bq.contract.controller;
 
+import com.alibaba.fastjson.JSONObject;
+import com.amazonaws.services.ecs.model.*;
 import com.amazonaws.services.sqs.model.Message;
+import com.aws.bq.common.model.Contract;
 import com.aws.bq.common.model.vo.ContractRequestVO;
 import com.aws.bq.common.model.vo.base.MessageVO;
+import com.aws.bq.common.util.ECSUtils;
 import com.aws.bq.common.util.SQSUtils;
-import com.aws.bq.contract.service.IContractService;
 import com.aws.bq.common.util.Utils;
-import com.aws.bq.common.model.Contract;
+import com.aws.bq.contract.service.IContractService;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import lombok.NonNull;
@@ -39,6 +42,16 @@ public class ContractController {
     private int DEFAULT_PAGE_SIZE;
     @Value("${amazon.sqs.queue.url}")
     private String MESSAGE_QUEUE_URL;
+    @Value("${amazon.ecs.cluster.name}")
+    private String CLUSTER_NAME;
+    @Value("${amazon.ecs.task.definition}")
+    private String TASK_DEFINITION;
+    @Value("${amazon.ecs.task.tag}")
+    private String TASK_TAG;
+    @Value("${amazon.ecs.task.container.name}")
+    private String CONTAINER_NAME;
+    @Value("${amazon.ecs.task.container.key.contract}")
+    private String CONTAINER_ENV_KEY_CONTRACT;
 
     @Autowired
     private IContractService contractService;
@@ -55,7 +68,7 @@ public class ContractController {
 
     @RequestMapping(value = "/search", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
     @ResponseBody
-    public MessageVO<Contract> search(@RequestBody ContractRequestVO contractVO) {
+    public MessageVO search(@RequestBody ContractRequestVO contractVO) {
         log.info("[ContractController] =========> Search item(s) in database......");
 
         // 分页设置
@@ -65,7 +78,7 @@ public class ContractController {
         PageHelper.startPage(pageIndex, pageSize);
         List<Contract> contracts = contractService.findByContract(contractVO);
         PageInfo<Contract> pageInfo = new PageInfo<>(contracts);
-        MessageVO<Contract> messageVO = new MessageVO<>();
+        MessageVO messageVO = new MessageVO();
         messageVO.setResponseCode(HttpStatus.SC_OK);
         messageVO.setData(contracts);
         messageVO.setPageIndex(pageInfo.getPageNum());
@@ -75,28 +88,36 @@ public class ContractController {
         return messageVO;
     }
 
-    @RequestMapping(value = "/message", produces = "application/json")
+    @RequestMapping(value = "/zip", produces = "application/json")
     @ResponseBody
-    public MessageVO<Message> message() {
-        log.info("[ContractController] =========> Receive item(s) in SQS......");
+    public MessageVO zip(@RequestBody ContractRequestVO contractRequestVO) {
+        log.info("[ContractController] =========> Trigger zip ecs task ......");
+        MessageVO messageVO = new MessageVO();
 
-        while (true) {
-            List<Message> messages = SQSUtils.receiveMessage(MESSAGE_QUEUE_URL);
-            if (null != messages && messages.size() > 0) {
-                MessageVO<Message> messageVO = new MessageVO<>();
-                messageVO.setResponseCode(HttpStatus.SC_OK);
-                messageVO.setData(messages);
-                messageVO.setTotalCount(messages.size());
-                messageVO.setResponseMessage("Success");
-
-                SQSUtils.deleteMessage(MESSAGE_QUEUE_URL, messages.get(0).getReceiptHandle());
-                return messageVO;
-            }
-            try {
-                Thread.sleep(TimeUnit.SECONDS.toSeconds(5));
-            } catch (InterruptedException e) {
-                log.error("[ContractController] =========> Exception: ", e);
-            }
+        RunTaskRequest request = new RunTaskRequest().withCluster(CLUSTER_NAME)
+                .withTaskDefinition(TASK_DEFINITION)
+                .withStartedBy(TASK_TAG)
+                .withOverrides(
+                        new TaskOverride().withContainerOverrides(
+                                new ContainerOverride()
+                                        .withName(CONTAINER_NAME)
+                                        .withEnvironment(
+                                                new KeyValuePair()
+                                                        .withName(CONTAINER_ENV_KEY_CONTRACT)
+//                                                        .withValue("{\"contractNum\": \"V10021\",\"signDateStart\": \"2018-08-01 10:50:19\",\"signDateEnd\": \"2018-08-10 10:50:19\",\"del\": 0,\"pageIndex\": 1,\"pageSize\": 10}"))));
+                                                        .withValue(JSONObject.toJSONString(contractRequestVO)))));
+        RunTaskResult response = ECSUtils.runTask(request);
+        List<Task> tasks = response.getTasks();
+        if (null == tasks || tasks.size() == 0) {
+            List<Failure> failures = response.getFailures();
+            messageVO.setResponseCode(HttpStatus.SC_INTERNAL_SERVER_ERROR);
+            messageVO.setData(failures);
+            messageVO.setResponseMessage("Fail");
         }
+
+        messageVO.setResponseCode(HttpStatus.SC_OK);
+        messageVO.setData(tasks);
+        messageVO.setResponseMessage("Success");
+        return messageVO;
     }
 }

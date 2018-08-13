@@ -24,6 +24,8 @@ endpoints:
     enabled: true
 
 amazon:
+  elb:
+    contract: http://aws-contract-lb-1813490861.cn-northwest-1.elb.amazonaws.com.cn:8088
   s3:
     bucket: bq-zhy-contract-bucket
     zipPrefix: zip/
@@ -35,12 +37,12 @@ amazon:
   sqs:
     queue:
       url: https://sqs.cn-northwest-1.amazonaws.com.cn/286792376082/aws-contract-queue
+  sns:
+    topic:
+      arn: arn:aws-cn:sns:cn-northwest-1:286792376082:bq-aws
+
 
 ## Mybatis
 mybatis:
   type-aliases-package: com.aws.bq.model
   mapper-locations: classpath:mapper/*.xml
-
-## Contract Management Platform
-bq:
-  contract-platform-dns: http://aws-contract-lb-1813490861.cn-northwest-1.elb.amazonaws.com.cn:8088

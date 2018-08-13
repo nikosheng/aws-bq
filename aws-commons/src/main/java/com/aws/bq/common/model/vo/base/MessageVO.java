@@ -10,7 +10,7 @@ import java.util.List;
  * @Date: 8/9/2018
  */
 @Data
-public class MessageVO<T> {
+public class MessageVO {
     private Integer responseCode;
     private String responseMessage;
     private Integer pageIndex;

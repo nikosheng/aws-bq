@@ -34,7 +34,7 @@ public class BqContractZipApplicationTests {
         String response = restTemplate.postForObject(
                 "http://aws-contract-lb-1813490861.cn-northwest-1.elb.amazonaws.com.cn:8088/contract/search",
                 entity, String.class);
-        MessageVO<Contract> vo = JSONObject.parseObject(response, MessageVO.class);
+        MessageVO vo = JSONObject.parseObject(response, MessageVO.class);
         System.out.println();
     }
 

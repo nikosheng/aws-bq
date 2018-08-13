@@ -7,10 +7,7 @@ import com.aws.bq.common.model.Contract;
 import com.aws.bq.common.model.ZipFileResult;
 import com.aws.bq.common.model.vo.S3ObjectFileVO;
 import com.aws.bq.common.model.vo.base.MessageVO;
-import com.aws.bq.common.util.ECSUtils;
-import com.aws.bq.common.util.S3Utils;
-import com.aws.bq.common.util.SQSUtils;
-import com.aws.bq.common.util.Utils;
+import com.aws.bq.common.util.*;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
@@ -49,10 +46,10 @@ public class AppStartupRunner implements CommandLineRunner, EnvironmentAware {
     private String ECS_CLUSTER_NAME;
     @Value("${amazon.ecs.task.tag}")
     private String ECS_TASK_BQ_TAG;
-    @Value("${bq.contract-platform-dns}")
-    private String BQ_CONTRACT_PLATFORM_DNS;
-    @Value("${amazon.sqs.queue.url}")
-    private String MESSAGE_QUEUE_URL;
+    @Value("${amazon.sns.topic.arn}")
+    private String SNS_TOPIC_ARN;
+    @Value("${amazon.elb.contract}")
+    private String ELB_CONTRACT_DNS;
 
     /** Environment variables */
     private String parameters;
@@ -63,7 +60,6 @@ public class AppStartupRunner implements CommandLineRunner, EnvironmentAware {
         log.info("[AppStartupRunner] =========> Parameter: " + parameters);
 
         try {
-            // 1. Search contracts with parameters in RDS
             JSONObject jsonObject = JSONObject.parseObject(parameters);
             String jsonStr = jsonObject.toJSONString();
             HttpHeaders headers = new HttpHeaders();
@@ -72,11 +68,10 @@ public class AppStartupRunner implements CommandLineRunner, EnvironmentAware {
 
             HttpEntity<String> entity = new HttpEntity<>(jsonStr, headers);
             String response = restTemplate.postForObject(
-                    BQ_CONTRACT_PLATFORM_DNS + "/contract/search",
+                    ELB_CONTRACT_DNS + "/contract/search",
                     entity, String.class);
-            MessageVO<JSONObject> messageVO = JSONObject.parseObject(response, MessageVO.class);
+            MessageVO messageVO = JSONObject.parseObject(response, MessageVO.class);
 
-            // 2. Retrieve the S3 objects url
             List<Contract> contracts = Lists.transform((List<JSONObject>) messageVO.getData(),
                     new Function<JSONObject, Contract>() {
                 @Override
@@ -103,9 +98,9 @@ public class AppStartupRunner implements CommandLineRunner, EnvironmentAware {
                 PutObjectResult res = S3Utils.putObject(BUCKET_NAME, s3Key, generatedZipFile);
                 URL url = S3Utils.getUrl(BUCKET_NAME, s3Key);
                 log.debug("[AppStartupRunner] =========> Path: " + url.toString());
-                // Send url to SQS
-                log.debug("[AppStartupRunner] =========> Send Message to SQS... Queue: " + MESSAGE_QUEUE_URL);
-                SQSUtils.sendMessage(MESSAGE_QUEUE_URL, url.toString());
+                // 发送压缩后的文件下载链接到SNS
+                log.debug("[AppStartupRunner] =========> Send Message to SNS... Topic: " + SNS_TOPIC_ARN);
+                SNSUtils.sendMessage(SNS_TOPIC_ARN, url.toString());
             } else {
                 log.error("[AppStartupRunner] =========> Unable to upload zip file to S3: ");
             }
