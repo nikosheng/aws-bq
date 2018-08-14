@@ -21,7 +21,7 @@ amazon:
     zipPrefix: zip/
   ecs:
     cluster:
-      name: default
+      name: aws-bq
     task:
       tag: bq
   sqs:
