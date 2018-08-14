@@ -15,7 +15,7 @@ endpoints:
 
 amazon:
   elb:
-    contract: aws-contract-private-lb-2115797049.cn-northwest-1.elb.amazonaws.com.cn:8088
+    contract: aws-contract-private-lb-2115797049.cn-northwest-1.elb.amazonaws.com.cn:8888
   s3:
     bucket: bq-zhy-contract-bucket
     zipPrefix: zip/
