@@ -61,8 +61,6 @@ public class ContractController {
     private IContractService contractService;
     @Autowired
     private IPropertiesService propertiesService;
-    @Autowired
-    private ThreadPoolTaskExecutor executor;
 
     @RequestMapping(value = "/insert", method = RequestMethod.POST)
     public void insert(@RequestBody @NonNull ContractRequestVO contractVO) {
