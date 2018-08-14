@@ -1,19 +1,9 @@
 server:
   port: 8081
 
-#TODO: figure out why I need this here and in bootstrap.yml
 spring:
   application:
     name: aws-contract-ecs-zip
-  datasource:
-    driver-class-name: com.mysql.jdbc.Driver
-    url: jdbc:mysql://lab.cxbwswfsjviz.rds.cn-northwest-1.amazonaws.com.cn:3306/labdb
-    username: admin
-    password: abcd1234
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
 
 endpoints:
   health:
@@ -25,7 +15,7 @@ endpoints:
 
 amazon:
   elb:
-    contract: http://aws-contract-lb-1813490861.cn-northwest-1.elb.amazonaws.com.cn:8088
+    contract: aws-contract-private-lb-2115797049.cn-northwest-1.elb.amazonaws.com.cn:8088
   s3:
     bucket: bq-zhy-contract-bucket
     zipPrefix: zip/
@@ -40,9 +30,3 @@ amazon:
   sns:
     topic:
       arn: arn:aws-cn:sns:cn-northwest-1:286792376082:bq-aws
-
-
-## Mybatis
-mybatis:
-  type-aliases-package: com.aws.bq.model
-  mapper-locations: classpath:mapper/*.xml
