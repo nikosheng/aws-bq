@@ -20,6 +20,7 @@ import org.apache.http.HttpStatus;
 import org.apache.http.client.utils.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -60,6 +61,8 @@ public class ContractController {
     private IContractService contractService;
     @Autowired
     private IPropertiesService propertiesService;
+    @Autowired
+    private ThreadPoolTaskExecutor executor;
 
     @RequestMapping(value = "/insert", method = RequestMethod.POST)
     public void insert(@RequestBody @NonNull ContractRequestVO contractVO) {
@@ -110,7 +113,6 @@ public class ContractController {
                                         .withEnvironment(
                                                 new KeyValuePair()
                                                         .withName(CONTAINER_ENV_KEY_CONTRACT)
-//                                                        .withValue("{\"contractNum\": \"V10021\",\"signDateStart\": \"2018-08-01 10:50:19\",\"signDateEnd\": \"2018-08-10 10:50:19\",\"del\": 0,\"pageIndex\": 1,\"pageSize\": 10}"))));
                                                         .withValue(JSONObject.toJSONString(contractRequestVO)))));
         RunTaskResult response = ECSUtils.runTask(request);
         List<Task> tasks = response.getTasks();
