@@ -39,31 +39,31 @@
     <include refid="Base_Column_List" />
     from contract
     <where>
-      <if test="contractId != null" >
+      <if test="contractId != null and contractId != ''" >
         and contract_id = #{contractId,jdbcType=VARCHAR}
       </if>
-      <if test="contractNum != null" >
+      <if test="contractNum != null and contractNum != ''" >
         and contract_num = #{contractNum,jdbcType=VARCHAR}
       </if>
-      <if test="clientName != null" >
+      <if test="clientName != null and clientName != ''" >
         and client_name = #{clientName,jdbcType=VARCHAR}
       </if>
-      <if test="clientMobile != null" >
+      <if test="clientMobile != null and clientMobile != ''" >
         and client_mobile = #{clientMobile,jdbcType=VARCHAR}
       </if>
-      <if test="clientNum != null" >
+      <if test="clientNum != null and clientNum != ''" >
         and client_num = #{clientNum,jdbcType=VARCHAR}
       </if>
-      <if test="capital != null" >
+      <if test="capital != null and capital != ''" >
         and capital = #{capital,jdbcType=VARCHAR}
       </if>
       <if test="contractStatus != null" >
         and contract_status = #{contractStatus,jdbcType=TINYINT}
       </if>
-      <if test="contractName != null" >
+      <if test="contractName != null and contractName != ''" >
         and contract_name = #{contractName,jdbcType=VARCHAR}
       </if>
-      <if test="directory != null" >
+      <if test="directory != null and directory != ''" >
         and directory = #{directory,jdbcType=VARCHAR}
       </if>
       <if test="signDateStart != null and signDateEnd != null" >
@@ -72,22 +72,22 @@
         and sign_date <= #{signDateEnd,jdbcType=TIMESTAMP}
         ]]>
       </if>
-      <if test="identityCardNum != null" >
+      <if test="identityCardNum != null and identityCardNum != ''" >
         and identity_card_num = #{identityCardNum,jdbcType=VARCHAR}
       </if>
-      <if test="s3Bucket != null" >
+      <if test="s3Bucket != null and s3Bucket != ''" >
         and s3_bucket = #{s3Bucket,jdbcType=VARCHAR}
       </if>
-      <if test="s3Key != null" >
+      <if test="s3Key != null and s3Key != ''" >
         and s3_key = #{s3Key,jdbcType=VARCHAR}
       </if>
-      <if test="createTime != null" >
+      <if test="createTime != null and createTime != ''" >
         and create_time = #{createTime,jdbcType=TIMESTAMP}
       </if>
-      <if test="updateTime != null" >
+      <if test="updateTime != null and updateTime != ''" >
         and update_time = #{updateTime,jdbcType=TIMESTAMP}
       </if>
-      <if test="operator != null" >
+      <if test="operator != null and operator != ''" >
         and operator = #{operator,jdbcType=VARCHAR}
       </if>
       <if test="del != null" >

@@ -5,11 +5,11 @@ server:
 spring:
   application:
     name: aws-contract-ecs-zip
-  datasource:
-    driver-class-name: com.mysql.jdbc.Driver
-    url: jdbc:mysql://lab.cxbwswfsjviz.rds.cn-northwest-1.amazonaws.com.cn:3306/labdb
-    username: admin
-    password: abcd1234
+#  datasource:
+#    driver-class-name: com.mysql.jdbc.Driver
+#    url: jdbc:mysql://lab.cxbwswfsjviz.rds.cn-northwest-1.amazonaws.com.cn:3306/labdb
+#    username: admin
+#    password: abcd1234
   jpa:
     hibernate:
       ddl-auto: update
