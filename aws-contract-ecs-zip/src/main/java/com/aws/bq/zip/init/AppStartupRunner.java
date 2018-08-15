@@ -72,7 +72,7 @@ public class AppStartupRunner implements CommandLineRunner, EnvironmentAware {
 
             HttpEntity<String> entity = new HttpEntity<>(jsonStr, headers);
             String response = restTemplate.postForObject(
-                    ELB_CONTRACT_DNS + "/contract/search",
+                    ELB_CONTRACT_DNS + "/contract/list",
                     entity, String.class);
             log.debug("[AppStartupRunner] =========> Response: " + response);
             MessageVO messageVO = JSONObject.parseObject(response, MessageVO.class);
