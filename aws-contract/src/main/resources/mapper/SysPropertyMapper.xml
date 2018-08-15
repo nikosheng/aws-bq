@@ -14,9 +14,9 @@
     property_id, property_key, property_value, create_time, update_time, operator, del
   </sql>
 
-  <select id="get" resultMap="BaseResultMap" parameterType="java.lang.String" >
-    select 
-    <include refid="Base_Column_List" />
+  <select id="get" resultType="java.lang.String" parameterType="java.lang.String" >
+    select
+      property_value
     from sys_property
     <where>
       <if test="propertyKey != null" >

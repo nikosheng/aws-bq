@@ -12,9 +12,9 @@ public interface IPropertiesService {
 
     boolean getBoolean(String key, boolean defaultValue);
 
-    double getInteger(String key, int defaultValue);
+    int getInt(String key, int defaultValue);
 
-    double getLong(String key, long defaultValue);
+    long getLong(String key, long defaultValue);
 
     double getDouble(String key, double defaultValue);
 }

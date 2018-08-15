@@ -26,26 +26,26 @@ public class PropertiesServiceImpl implements IPropertiesService {
 
     @Override
     public String getString(String key, String defaultValue) {
-        String value = (String) propertiesDAO.get(key);
+        String value = propertiesDAO.get(key);
         return StringUtils.isEmpty(value) ? defaultValue : value;
     }
 
     @Override
     public boolean getBoolean(String key, boolean defaultValue) {
-        Boolean value = (Boolean) propertiesDAO.get(key);
-        if (null == value) {
-            value = defaultValue;
+        String value = propertiesDAO.get(key);
+        if (StringUtils.isEmpty(value)) {
+            return defaultValue;
         }
-        return value;
+        return Boolean.parseBoolean(propertiesDAO.get(key));
     }
 
     @Override
-    public double getInteger(String key, int defaultValue) {
+    public int getInt(String key, int defaultValue) {
         return NumberUtils.toInt(getString(key), defaultValue);
     }
 
     @Override
-    public double getLong(String key, long defaultValue) {
+    public long getLong(String key, long defaultValue) {
         return NumberUtils.toLong(getString(key), defaultValue);
     }
 

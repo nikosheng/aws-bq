@@ -8,5 +8,5 @@ import org.apache.ibatis.annotations.Param;
  * @Date: 8/13/2018
  */
 public interface IPropertiesDAO {
-    Object get(@Param("propertyId") String key);
+    String get(@Param("propertyKey") String key);
 }

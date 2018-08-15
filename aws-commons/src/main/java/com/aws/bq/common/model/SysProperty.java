@@ -1,5 +1,7 @@
 package com.aws.bq.common.model;
 
+import lombok.Data;
+
 import java.util.Date;
 
 /**
@@ -8,6 +10,7 @@ import java.util.Date;
  * @author:  jiasfeng
  * @创建时间: 2018-08-13
  */
+@Data
 public class SysProperty {
     /**
      * 属性ID
