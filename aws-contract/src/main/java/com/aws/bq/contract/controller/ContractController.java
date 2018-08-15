@@ -3,7 +3,6 @@ package com.aws.bq.contract.controller;
 import com.alibaba.fastjson.JSONObject;
 import com.amazonaws.services.ecs.model.*;
 import com.aws.bq.common.model.Contract;
-import com.aws.bq.common.model.enumeration.ContractStatusEnum;
 import com.aws.bq.common.model.vo.ContractRequestVO;
 import com.aws.bq.common.model.vo.ContractResponseVO;
 import com.aws.bq.common.model.vo.base.MessageVO;
@@ -16,18 +15,15 @@ import com.aws.bq.contract.service.IPropertiesService;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.http.HttpStatus;
-import org.apache.http.client.utils.DateUtils;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -36,7 +32,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Date;
 import java.util.List;
-import java.util.OptionalInt;
 
 /**
  * @Description:
@@ -82,7 +77,7 @@ public class ContractController {
 
         // 分页设置
         Integer pageIndex = null == contractRequestVO.getPageIndex() ? DEFAULT_PAGE_INDEX : contractRequestVO.getPageIndex();
-        Integer pageSize = null == contractRequestVO.getPageSize() ? DEFAULT_PAGE_SIZE : contractRequestVO.getPageIndex();
+        Integer pageSize = null == contractRequestVO.getPageSize() ? DEFAULT_PAGE_SIZE : contractRequestVO.getPageSize();
 
         PageHelper.startPage(pageIndex, pageSize);
         List<Contract> contracts = contractService.findByContract(contractRequestVO);
