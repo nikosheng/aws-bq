@@ -5,6 +5,7 @@ import com.amazonaws.services.s3.model.PutObjectResult;
 import com.amazonaws.services.s3.model.S3Object;
 import com.aws.bq.common.model.Contract;
 import com.aws.bq.common.model.ZipFileResult;
+import com.aws.bq.common.model.vo.ContractResponseVO;
 import com.aws.bq.common.model.vo.S3ObjectFileVO;
 import com.aws.bq.common.model.vo.base.MessageVO;
 import com.aws.bq.common.util.*;
@@ -70,19 +71,20 @@ public class AppStartupRunner implements CommandLineRunner, EnvironmentAware {
             String response = restTemplate.postForObject(
                     ELB_CONTRACT_DNS + "/contract/search",
                     entity, String.class);
+            log.info("[AppStartupRunner] =========> Response: " + response);
             MessageVO messageVO = JSONObject.parseObject(response, MessageVO.class);
 
-            List<Contract> contracts = Lists.transform((List<JSONObject>) messageVO.getData(),
-                    new Function<JSONObject, Contract>() {
+            List<ContractResponseVO> contracts = Lists.transform((List<JSONObject>) messageVO.getData(),
+                    new Function<JSONObject, ContractResponseVO>() {
                 @Override
-                public Contract apply(@Nullable JSONObject jsonObject) {
-                    return jsonObject.toJavaObject(Contract.class);
+                public ContractResponseVO apply(@Nullable JSONObject jsonObject) {
+                    return jsonObject.toJavaObject(ContractResponseVO.class);
                 }
             });
 
-            List<File> files = Lists.transform(contracts, new Function<Contract, File>() {
+            List<File> files = Lists.transform(contracts, new Function<ContractResponseVO, File>() {
                         @Override
-                        public File apply(@Nullable Contract contract) {
+                        public File apply(@Nullable ContractResponseVO contract) {
                             log.info("[AppStartupRunner] =========> " + contract.getS3Bucket() + " : " + contract.getS3Key());
                             S3Object object = S3Utils.getObject(contract.getS3Bucket(), contract.getS3Key());
                             S3ObjectFileVO vo = S3Utils.getFileFromS3Object(object);
@@ -113,6 +115,7 @@ public class AppStartupRunner implements CommandLineRunner, EnvironmentAware {
 
     @Override
     public void setEnvironment(Environment environment) {
+        log.debug("[AppStartupRunner] =========> Set environment variables......");
         this.parameters = environment.getProperty("contract-env");
     }
 }

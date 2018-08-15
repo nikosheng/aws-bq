@@ -5,6 +5,7 @@ import com.amazonaws.services.ecs.model.*;
 import com.aws.bq.common.model.Contract;
 import com.aws.bq.common.model.enumeration.ContractStatusEnum;
 import com.aws.bq.common.model.vo.ContractRequestVO;
+import com.aws.bq.common.model.vo.ContractResponseVO;
 import com.aws.bq.common.model.vo.base.MessageVO;
 import com.aws.bq.common.util.ECSUtils;
 import com.aws.bq.common.util.ExcelUtils;
@@ -82,8 +83,8 @@ public class ContractController {
         Integer pageSize = null == contractRequestVO.getPageSize() ? DEFAULT_PAGE_SIZE : contractRequestVO.getPageIndex();
 
         PageHelper.startPage(pageIndex, pageSize);
-        List<Contract> contracts = contractService.findByContract(contractRequestVO);
-        PageInfo<Contract> pageInfo = new PageInfo<>(contracts);
+        List<ContractResponseVO> contracts = contractService.findByContract(contractRequestVO);
+        PageInfo<ContractResponseVO> pageInfo = new PageInfo<>(contracts);
         MessageVO messageVO = new MessageVO();
         messageVO.setResponseCode(HttpStatus.SC_OK);
         messageVO.setData(contracts);
@@ -135,20 +136,20 @@ public class ContractController {
 
         try {
             MessageVO resultVO = search(contractRequestVO);
-            List<Contract> contracts = (List<Contract>) resultVO.getData();
+            List<ContractResponseVO> contracts = (List<ContractResponseVO>) resultVO.getData();
 
             ExcelUtils.ExcelVo vo = new ExcelUtils.ExcelVo();
             vo.setFileName("合同文件清单_" + DateFormatUtils.format(new Date(), "yyyyMMddHHmmss"));
             vo.addContentRow("合同号;客户姓名;客户手机号;客户编号;资方;合同状态;文件名;目录名;合同签署时间;身份证号".split(";"));
             if (!CollectionUtils.isEmpty(contracts)) {
-                for (Contract contract : contracts) {
+                for (ContractResponseVO contract : contracts) {
                     vo.addContentRow(
                             contract.getContractNum(),
                             contract.getClientName(),
                             contract.getClientMobile(),
                             contract.getClientNum(),
                             contract.getCapital(),
-                            ContractStatusEnum.from(contract.getContractStatus()).getStatusName(),
+                            contract.getContractStatus(),
                             contract.getContractName(),
                             contract.getDirectory(),
                             DateUtils.formatDate(contract.getSignDate()),
