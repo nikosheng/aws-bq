@@ -1,0 +1,17 @@
+amazon:
+  elb:
+    contract: aws-contract-private-lb-2115797049.cn-northwest-1.elb.amazonaws.com.cn:8888
+  s3:
+    bucket: bq-zhy-contract-bucket
+    zipPrefix: zip/
+  ecs:
+    cluster:
+      name: aws-bq
+    task:
+      tag: bq
+  sqs:
+    queue:
+      url: https://sqs.cn-northwest-1.amazonaws.com.cn/286792376082/aws-contract-queue
+  sns:
+    topic:
+      arn: arn:aws-cn:sns:cn-northwest-1:286792376082:bq-aws
