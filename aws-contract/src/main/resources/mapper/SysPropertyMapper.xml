@@ -19,8 +19,8 @@
     <include refid="Base_Column_List" />
     from sys_property
     <where>
-      <if test="propertyId != null" >
-        and property_id = #{propertyId,jdbcType=VARCHAR}
+      <if test="propertyKey != null" >
+        and property_key = #{propertyKey,jdbcType=VARCHAR}
       </if>
     </where>
   </select>
