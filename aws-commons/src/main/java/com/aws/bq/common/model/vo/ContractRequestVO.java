@@ -1,6 +1,6 @@
 package com.aws.bq.common.model.vo;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.alibaba.fastjson.annotation.JSONField;
 import lombok.Data;
 
 import java.util.Date;
@@ -21,9 +21,9 @@ public class ContractRequestVO {
     private Integer contractStatus;
     private String contractName;
     private String directory;
-    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JSONField(format = "yyyy-MM-dd HH:mm:ss")
     private Date signDateStart;
-    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JSONField(format = "yyyy-MM-dd HH:mm:ss")
     private Date signDateEnd;
     private String identityCardNum;
     private String s3Bucket;
