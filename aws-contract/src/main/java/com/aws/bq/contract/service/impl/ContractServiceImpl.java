@@ -36,28 +36,14 @@ public class ContractServiceImpl implements IContractService {
     }
 
     @Override
-    public List<ContractResponseVO> findByContract(ContractRequestVO contract) {
+    public List<Contract> findByContract(ContractRequestVO contract) {
         List<Contract> contracts = contractDAO.findByContract(contract);
-        List<ContractResponseVO> responseVOS = Lists.transform(contracts, new Function<Contract, ContractResponseVO>() {
-            @Override
-            public ContractResponseVO apply(@Nullable Contract contract) {
-                ContractResponseVO vo = new ContractResponseVO();
-                return vo.convert(contract);
-            }
-        });
-        return responseVOS.size() > 0 ? responseVOS : new ArrayList<>();
+        return contracts.size() > 0 ? contracts : new ArrayList<>();
     }
 
     @Override
-    public List<ContractResponseVO> findAll() {
+    public List<Contract> findAll() {
         List<Contract> contracts = contractDAO.findAll();
-        List<ContractResponseVO> responseVOS = Lists.transform(contracts, new Function<Contract, ContractResponseVO>() {
-            @Override
-            public ContractResponseVO apply(@Nullable Contract contract) {
-                ContractResponseVO vo = new ContractResponseVO();
-                return vo.convert(contract);
-            }
-        });
-        return responseVOS.size() > 0 ? responseVOS : new ArrayList<>();
+        return contracts.size() > 0 ? contracts : new ArrayList<>();
     }
 }

@@ -15,6 +15,6 @@ import java.util.List;
 public interface IContractService {
     int insert(Contract contract);
     int delete(String contractId);
-    List<ContractResponseVO> findByContract(ContractRequestVO contract);
-    List<ContractResponseVO> findAll();
+    List<Contract> findByContract(ContractRequestVO contract);
+    List<Contract> findAll();
 }

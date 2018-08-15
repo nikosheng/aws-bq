@@ -14,12 +14,15 @@ import com.aws.bq.contract.service.IContractService;
 import com.aws.bq.contract.service.IPropertiesService;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
+import com.google.common.collect.Lists;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.utils.DateUtils;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -83,11 +86,18 @@ public class ContractController {
         Integer pageSize = null == contractRequestVO.getPageSize() ? DEFAULT_PAGE_SIZE : contractRequestVO.getPageIndex();
 
         PageHelper.startPage(pageIndex, pageSize);
-        List<ContractResponseVO> contracts = contractService.findByContract(contractRequestVO);
-        PageInfo<ContractResponseVO> pageInfo = new PageInfo<>(contracts);
+        List<Contract> contracts = contractService.findByContract(contractRequestVO);
+        PageInfo<Contract> pageInfo = new PageInfo<>(contracts);
+        List<ContractResponseVO> contractVOs = Lists.transform(contracts, new Function<Contract, ContractResponseVO>() {
+            @Override
+            public ContractResponseVO apply(@Nullable Contract contract) {
+                ContractResponseVO vo = new ContractResponseVO();
+                return vo.convert(contract);
+            }
+        });
         MessageVO messageVO = new MessageVO();
         messageVO.setResponseCode(HttpStatus.SC_OK);
-        messageVO.setData(contracts);
+        messageVO.setData(contractVOs);
         messageVO.setPageIndex(pageInfo.getPageNum());
         messageVO.setPageTotal(pageInfo.getPages());
         messageVO.setTotalCount((int) pageInfo.getTotal());
