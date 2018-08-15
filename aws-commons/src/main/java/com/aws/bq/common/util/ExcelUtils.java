@@ -128,7 +128,7 @@ public class ExcelUtils {
      */
     public static void exportExcel(ExcelVo vo, HttpServletResponse response) throws Exception {
         response.setContentType("application/vnd.ms-excel");
-        String fileName = StringUtils.isBlank(vo.fileName) ? "aics" : new String(vo.fileName.getBytes("utf-8"), "iso8859-1");
+        String fileName = StringUtils.isBlank(vo.fileName) ? "awsbq" : new String(vo.fileName.getBytes("utf-8"), "iso8859-1");
         response.setHeader("content-disposition", "attachment; filename=" + fileName + ".xls");
         exportExcel(vo, response.getOutputStream());
     }

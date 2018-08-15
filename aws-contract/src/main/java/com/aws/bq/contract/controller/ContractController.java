@@ -13,6 +13,7 @@ import com.aws.bq.contract.service.IContractService;
 import com.aws.bq.contract.service.IPropertiesService;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.google.common.base.Optional;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateFormatUtils;
@@ -77,8 +78,8 @@ public class ContractController {
         log.info("[ContractController] =========> Search item(s) in database......");
 
         // 分页设置
-        Integer pageIndex = OptionalInt.of(contractRequestVO.getPageIndex()).orElse(DEFAULT_PAGE_INDEX);
-        Integer pageSize = OptionalInt.of(contractRequestVO.getPageSize()).orElse(DEFAULT_PAGE_SIZE);
+        Integer pageIndex = null == contractRequestVO.getPageIndex() ? DEFAULT_PAGE_INDEX : contractRequestVO.getPageIndex();
+        Integer pageSize = null == contractRequestVO.getPageSize() ? DEFAULT_PAGE_SIZE : contractRequestVO.getPageIndex();
 
         PageHelper.startPage(pageIndex, pageSize);
         List<Contract> contracts = contractService.findByContract(contractRequestVO);
