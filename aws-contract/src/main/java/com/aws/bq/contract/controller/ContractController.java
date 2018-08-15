@@ -10,6 +10,7 @@ import com.aws.bq.common.model.vo.base.MessageVO;
 import com.aws.bq.common.util.ECSUtils;
 import com.aws.bq.common.util.ExcelUtils;
 import com.aws.bq.common.util.Utils;
+import com.aws.bq.contract.model.ContractExcel;
 import com.aws.bq.contract.service.IContractService;
 import com.aws.bq.contract.service.IPropertiesService;
 import com.github.pagehelper.PageHelper;
@@ -153,34 +154,28 @@ public class ContractController {
     @ResponseBody
     public MessageVO exportExcel(@RequestBody ContractRequestVO contractRequestVO, HttpServletResponse response) {
         MessageVO messageVO = new MessageVO();
-        int totalNum = 0;
 
         try {
-            MessageVO resultVO = search(contractRequestVO);
-            List<ContractResponseVO> contracts = (List<ContractResponseVO>) resultVO.getData();
+            MessageVO resultVO = list(contractRequestVO);
+            List<Contract> contracts = (List<Contract>) resultVO.getData();
 
-            ExcelUtils.ExcelVo vo = new ExcelUtils.ExcelVo();
-            vo.setFileName("合同文件清单_" + DateFormatUtils.format(new Date(), "yyyyMMddHHmmss"));
-            vo.addContentRow("合同号;客户姓名;客户手机号;客户编号;资方;合同状态;文件名;目录名;合同签署时间;身份证号".split(";"));
-            if (!CollectionUtils.isEmpty(contracts)) {
-                for (ContractResponseVO contract : contracts) {
-                    vo.addContentRow(
-                            contract.getContractNum(),
-                            contract.getClientName(),
-                            contract.getClientMobile(),
-                            contract.getClientNum(),
-                            contract.getCapital(),
-                            contract.getContractStatus(),
-                            contract.getContractName(),
-                            contract.getDirectory(),
-                            DateUtils.formatDate(contract.getSignDate()),
-                            contract.getIdentityCardNum());
-                    totalNum++;
+            List<ContractExcel> excelVOs = Lists.transform(contracts, new Function<Contract, ContractExcel>() {
+                @Override
+                public ContractExcel apply(@Nullable Contract contract) {
+                    ContractExcel vo = new ContractExcel();
+                    return vo.convert(contract);
                 }
-            }
+            });
 
-            ExcelUtils.exportExcel(vo, response);
-            messageVO.setTotalCount(totalNum);
+            ExcelUtils.exportExcel(excelVOs,
+                    "aws-bq",
+                    "contracts",
+                    ContractExcel.class,
+                    "合同文件清单_" + DateFormatUtils.format(new Date(), "yyyyMMddHHmmss"),
+                    true,
+                    response);
+
+            messageVO.setTotalCount(excelVOs.size());
             messageVO.setResponseCode(HttpStatus.SC_OK);
             messageVO.setResponseMessage("Success");
         } catch (Exception e) {
