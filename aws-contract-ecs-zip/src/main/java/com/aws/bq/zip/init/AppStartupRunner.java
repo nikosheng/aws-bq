@@ -3,6 +3,7 @@ package com.aws.bq.zip.init;
 import com.alibaba.fastjson.JSONObject;
 import com.amazonaws.services.s3.model.PutObjectResult;
 import com.amazonaws.services.s3.model.S3Object;
+import com.aws.bq.common.model.Contract;
 import com.aws.bq.common.model.ZipFileResult;
 import com.aws.bq.common.model.vo.ContractResponseVO;
 import com.aws.bq.common.model.vo.S3ObjectFileVO;
@@ -60,10 +61,8 @@ public class AppStartupRunner implements CommandLineRunner, EnvironmentAware {
     @Override
     public void run(String... args) throws Exception {
         log.debug("[AppStartupRunner] =========> The app is running......");
-//        log.info("[AppStartupRunner] =========> Parameter: " + parameters);
 
         try {
-            log.debug("[AppStartupRunner] =========> Start Main Login......");
             JSONObject jsonObject = JSONObject.parseObject(parameters);
             String jsonStr = jsonObject.toJSONString();
             log.info("[AppStartupRunner] =========> Parameter: " + jsonStr);
@@ -75,20 +74,20 @@ public class AppStartupRunner implements CommandLineRunner, EnvironmentAware {
             String response = restTemplate.postForObject(
                     ELB_CONTRACT_DNS + "/contract/search",
                     entity, String.class);
-            log.info("[AppStartupRunner] =========> Response: " + response);
+            log.debug("[AppStartupRunner] =========> Response: " + response);
             MessageVO messageVO = JSONObject.parseObject(response, MessageVO.class);
 
-            List<ContractResponseVO> contracts = Lists.transform((List<JSONObject>) messageVO.getData(),
-                    new Function<JSONObject, ContractResponseVO>() {
+            List<Contract> contracts = Lists.transform((List<JSONObject>) messageVO.getData(),
+                    new Function<JSONObject, Contract>() {
                 @Override
-                public ContractResponseVO apply(@Nullable JSONObject jsonObject) {
-                    return jsonObject.toJavaObject(ContractResponseVO.class);
+                public Contract apply(@Nullable JSONObject jsonObject) {
+                    return jsonObject.toJavaObject(Contract.class);
                 }
             });
 
-            List<File> files = Lists.transform(contracts, new Function<ContractResponseVO, File>() {
+            List<File> files = Lists.transform(contracts, new Function<Contract, File>() {
                         @Override
-                        public File apply(@Nullable ContractResponseVO contract) {
+                        public File apply(@Nullable Contract contract) {
                             log.info("[AppStartupRunner] =========> " + contract.getS3Bucket() + " : " + contract.getS3Key());
                             S3Object object = S3Utils.getObject(contract.getS3Bucket(), contract.getS3Key());
                             S3ObjectFileVO vo = S3Utils.getFileFromS3Object(object);

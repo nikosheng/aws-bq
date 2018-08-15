@@ -33,10 +33,9 @@ amazon:
     zipPrefix: zip/
   ecs:
     cluster:
-      name: default
+      name: aws-bq
     task:
       tag: bq
-      definition: contract-zip-taskref:5
       container:
         name: aws-contract-zip
         key:

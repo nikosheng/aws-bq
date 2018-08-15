@@ -52,8 +52,6 @@ public class ContractController {
     private int DEFAULT_PAGE_SIZE;
     @Value("${amazon.ecs.cluster.name}")
     private String CLUSTER_NAME;
-    @Value("${amazon.ecs.task.definition}")
-    private String TASK_DEFINITION;
     @Value("${amazon.ecs.task.tag}")
     private String TASK_TAG;
     @Value("${amazon.ecs.task.container.name}")
@@ -105,13 +103,26 @@ public class ContractController {
         return messageVO;
     }
 
+    @RequestMapping(value = "/list", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+    @ResponseBody
+    public MessageVO list(@RequestBody ContractRequestVO contractRequestVO) {
+        log.info("[ContractController] =========> List all item(s) in database......");
+
+        List<Contract> contracts = contractService.findByContract(contractRequestVO);
+        MessageVO messageVO = new MessageVO();
+        messageVO.setResponseCode(HttpStatus.SC_OK);
+        messageVO.setData(contracts);
+        messageVO.setResponseMessage("Success");
+        return messageVO;
+    }
+
     @RequestMapping(value = "/zip", produces = "application/json")
     @ResponseBody
     public MessageVO zip(@RequestBody ContractRequestVO contractRequestVO) {
         log.info("[ContractController] =========> Trigger zip ecs task ......");
         MessageVO messageVO = new MessageVO();
 
-        String taskDef = propertiesService.getString("task_def", "contract-zip-taskref:1");
+        String taskDef = propertiesService.getString("task_def", "contract-zip-taskref:18");
         RunTaskRequest request = new RunTaskRequest().withCluster(CLUSTER_NAME)
                 .withTaskDefinition(taskDef)
                 .withStartedBy(TASK_TAG)
