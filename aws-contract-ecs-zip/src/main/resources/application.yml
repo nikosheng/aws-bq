@@ -5,7 +5,7 @@ spring:
   application:
     name: aws-contract-ecs-zip
   profiles:
-    active: dev
+    active: prod
 
 endpoints:
   health:
