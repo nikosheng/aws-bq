@@ -60,11 +60,13 @@ public class AppStartupRunner implements CommandLineRunner, EnvironmentAware {
     @Override
     public void run(String... args) throws Exception {
         log.debug("[AppStartupRunner] =========> The app is running......");
-        log.info("[AppStartupRunner] =========> Parameter: " + parameters);
+//        log.info("[AppStartupRunner] =========> Parameter: " + parameters);
 
         try {
+            log.debug("[AppStartupRunner] =========> Start Main Login......");
             JSONObject jsonObject = JSONObject.parseObject(parameters);
             String jsonStr = jsonObject.toJSONString();
+            log.info("[AppStartupRunner] =========> Parameter: " + jsonStr);
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
             headers.add("Accept", MediaType.APPLICATION_JSON.toString());
