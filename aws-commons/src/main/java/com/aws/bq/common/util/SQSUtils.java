@@ -8,7 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.List;
 
 /**
- * @Description:
+ * @Description: SQS 工具类
  * @author: jiasfeng
  * @Date: 8/10/2018
  */

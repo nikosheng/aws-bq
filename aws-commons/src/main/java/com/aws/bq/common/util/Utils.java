@@ -13,7 +13,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 /**
- * @Description:
+ * @Description: 工具类
  * @author: jiasfeng
  * @Date: 8/5/2018
  */

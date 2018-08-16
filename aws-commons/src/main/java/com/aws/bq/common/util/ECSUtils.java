@@ -9,7 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.List;
 
 /**
- * @Description:
+ * @Description: ECS 工具类
  * @author: jiasfeng
  * @Date: 8/10/2018
  */
@@ -18,10 +18,21 @@ public class ECSUtils {
     private static AmazonECS client =
             AmazonECSClientBuilder.standard().withRegion(Region.CN_Northwest_1.toString()).build();
 
+    /**
+     * 运行任务
+     * @param request
+     * @return
+     */
     public static RunTaskResult runTask(RunTaskRequest request) {
         return client.runTask(request);
     }
 
+    /**
+     * 停止任务
+     * @param cluster
+     * @param tag
+     * @return
+     */
     public static boolean stopAllTask(String cluster, String tag) {
         // List the running task with tag
         try {
@@ -41,6 +52,12 @@ public class ECSUtils {
         return true;
     }
 
+    /**
+     * 停止任务
+     * @param cluster
+     * @param taskArn
+     * @return
+     */
     public static StopTaskResult stopTask(String cluster, String taskArn) {
         StopTaskRequest stopReq = new StopTaskRequest().withCluster(cluster)
                 .withTask(taskArn);

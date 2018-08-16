@@ -1,6 +1,7 @@
 package com.aws.bq.zip.init;
 
 import com.alibaba.fastjson.JSONObject;
+import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.PutObjectResult;
 import com.amazonaws.services.s3.model.S3Object;
 import com.aws.bq.common.model.Contract;
@@ -16,6 +17,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -41,6 +43,8 @@ import java.util.List;
 public class AppStartupRunner implements CommandLineRunner, EnvironmentAware {
     @Autowired
     private RestTemplate restTemplate;
+    @Autowired
+    private AmazonS3 amazonS3;
 
     @Value("${amazon.s3.bucket}")
     private String BUCKET_NAME;
@@ -89,7 +93,7 @@ public class AppStartupRunner implements CommandLineRunner, EnvironmentAware {
                         @Override
                         public File apply(@Nullable Contract contract) {
                             log.info("[AppStartupRunner] =========> " + contract.getS3Bucket() + " : " + contract.getS3Key());
-                            S3Object object = S3Utils.getObject(contract.getS3Bucket(), contract.getS3Key());
+                            S3Object object = S3Utils.getObject(amazonS3, contract.getS3Bucket(), contract.getS3Key());
                             S3ObjectFileVO vo = S3Utils.getFileFromS3Object(object);
                             return S3Utils.convertFromS3Object(object, vo.getFileName());
                         }
@@ -100,8 +104,8 @@ public class AppStartupRunner implements CommandLineRunner, EnvironmentAware {
             ZipFileResult result = Utils.zipFiles(files, generatedZipFile);
             String s3Key = ZIP_S3_PREFIX + generatedZipFile;
             if (result.isSuccess()) {
-                PutObjectResult res = S3Utils.putObject(BUCKET_NAME, s3Key, generatedZipFile);
-                URL url = S3Utils.getUrl(BUCKET_NAME, s3Key);
+                PutObjectResult res = S3Utils.putObject(amazonS3, BUCKET_NAME, s3Key, generatedZipFile);
+                URL url = S3Utils.getUrl(amazonS3, BUCKET_NAME, s3Key);
                 log.debug("[AppStartupRunner] =========> Path: " + url.toString());
                 // 发送压缩后的文件下载链接到SNS
                 log.debug("[AppStartupRunner] =========> Send Message to SNS... Topic: " + SNS_TOPIC_ARN);

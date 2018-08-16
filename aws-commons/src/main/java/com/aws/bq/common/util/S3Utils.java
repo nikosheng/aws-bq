@@ -1,7 +1,6 @@
 package com.aws.bq.common.util;
 
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectResult;
@@ -17,24 +16,43 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 
 /**
- * @Description:
+ * @Description: S3 工具类
  * @author: jiasfeng
  * @Date: 8/10/2018
  */
 @Slf4j
 public class S3Utils {
-    private static AmazonS3 amazonS3 = AmazonS3ClientBuilder.defaultClient();
-
-    public static PutObjectResult putObject(String bucketName, String key, String file_path) {
+    /**
+     * 上传S3对象
+     * @param amazonS3
+     * @param bucketName
+     * @param key
+     * @param file_path
+     * @return
+     */
+    public static PutObjectResult putObject(AmazonS3 amazonS3, String bucketName, String key, String file_path) {
         return amazonS3.putObject(
                 new PutObjectRequest(bucketName, key, new File(file_path))
                         .withCannedAcl(CannedAccessControlList.PublicRead));
     }
 
-    public static S3Object getObject(String bucketName, String key) {
+    /**
+     * 获取S3对象
+     * @param amazonS3
+     * @param bucketName
+     * @param key
+     * @return
+     */
+    public static S3Object getObject(AmazonS3 amazonS3, String bucketName, String key) {
         return amazonS3.getObject(bucketName, key);
     }
 
+    /**
+     * 转换S3对象为File对象
+     * @param object
+     * @param fileName
+     * @return
+     */
     public static File convertFromS3Object(S3Object object, String fileName) {
         File tmp = null;
         InputStream in = object.getObjectContent();
@@ -48,6 +66,11 @@ public class S3Utils {
         return tmp;
     }
 
+    /**
+     * 获取S3ObjectFileVO
+     * @param object
+     * @return
+     */
     public static S3ObjectFileVO getFileFromS3Object(S3Object object) {
         String key = object.getKey();
         S3ObjectFileVO vo = new S3ObjectFileVO();
@@ -60,7 +83,14 @@ public class S3Utils {
         return vo;
     }
 
-    public static URL getUrl(String bucket, String key) {
+    /**
+     * 获取S3对象URL
+     * @param amazonS3
+     * @param bucket
+     * @param key
+     * @return
+     */
+    public static URL getUrl(AmazonS3 amazonS3, String bucket, String key) {
         return amazonS3.getUrl(bucket, key);
     }
 }
