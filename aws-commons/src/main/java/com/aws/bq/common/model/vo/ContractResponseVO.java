@@ -1,6 +1,7 @@
 package com.aws.bq.common.model.vo;
 
 import com.aws.bq.common.model.Contract;
+import com.aws.bq.common.model.enumeration.CapitalEnum;
 import com.aws.bq.common.model.enumeration.ContractStatusEnum;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
@@ -113,7 +114,7 @@ public class ContractResponseVO {
         this.contractName = contract.getContractName();
         this.contractNum = contract.getContractNum();
         this.contractStatus = ContractStatusEnum.from(contract.getContractStatus()).getStatusName();
-        this.capital = contract.getCapital();
+        this.capital = CapitalEnum.from(contract.getCapital()).getCapitalName();
         this.clientMobile = contract.getClientMobile();
         this.clientName = contract.getClientName();
         this.clientNum = contract.getClientNum();

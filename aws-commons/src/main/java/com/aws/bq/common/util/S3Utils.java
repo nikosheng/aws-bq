@@ -1,10 +1,7 @@
 package com.aws.bq.common.util;
 
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.CannedAccessControlList;
-import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.services.s3.model.PutObjectResult;
-import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.*;
 import com.aws.bq.common.model.vo.S3ObjectFileVO;
 import lombok.extern.slf4j.Slf4j;
 
