@@ -71,17 +71,7 @@ public class TransferMgrBuilderImpl implements ITransferMgrBuilder {
 
     @Override
     public File getObject(TransferManager manager, String bucketName, String key, String fileName) {
-        try {
-            File file = new File(fileName);
-            Download download = manager.download(new GetObjectRequest(bucketName, key), file);
-            download.waitForCompletion();
-            if (download.getState() == Transfer.TransferState.Completed) {
-                return file;
-            }
-        } catch (Exception e) {
-            log.error("[TransferMgrBuilderImpl] ========> Exception:", e);
-        }
-        return null;
+        return getObject(manager, bucketName, key, fileName, 0);
     }
 
     @Override

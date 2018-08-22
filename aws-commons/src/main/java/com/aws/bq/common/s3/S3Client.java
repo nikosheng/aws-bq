@@ -11,6 +11,7 @@ import com.amazonaws.services.s3.transfer.model.UploadResult;
 import com.aws.bq.common.model.Contract;
 import com.aws.bq.common.s3.impl.S3BuilderImpl;
 import com.aws.bq.common.s3.impl.TransferMgrBuilderImpl;
+import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.*;
 import lombok.extern.slf4j.Slf4j;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -21,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * @Description:
@@ -30,7 +32,8 @@ import java.util.concurrent.Executors;
 @Slf4j
 public class S3Client {
 
-    private final ListeningExecutorService service = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(10));
+    public static final int TASK_SIZE = 10;
+    private final ListeningExecutorService service = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(TASK_SIZE));
 
     private S3Client(){}
 
@@ -105,37 +108,24 @@ public class S3Client {
      * @return
      */
     public List<File> downloadByTransferMgr(TransferManager manager, List<Contract> contracts) {
-        List<File> files = new ArrayList<>();
-        ITransferMgrBuilder builder = new TransferMgrBuilderImpl();
+        return downloadByTransferMgr(manager, contracts, 0);
+    }
 
-        for (Contract contract : contracts) {
-            String fileName = getFileName(contract.getS3Key());
-            ListenableFuture<File> future = service.submit(new Callable<File>() {
-                @Override
-                public File call() {
-                    try {
-                        return builder.getObject(manager, contract.getS3Bucket(), contract.getS3Key(), fileName);
-                    } catch (Exception e) {
-                        log.error("[S3Client] ========> Exception:", e);
-                    }
-                    return null;
-                }
-            });
+    private List<List<Contract>> splitTasks(List<Contract> contracts) {
+        List<List<Contract>> list = new ArrayList<>();
 
-            Futures.addCallback(future, new FutureCallback<File>() {
-                @Override
-                public void onSuccess(@Nullable File file) {
-                    files.add(file);
-                    log.info("[TransferMgrBuilderImpl] ============> Upload Success: " + file.getName());
-                }
-
-                @Override
-                public void onFailure(Throwable throwable) {
-                    log.error("[TransferMgrBuilderImpl] ============> Upload Failed: ", throwable);
-                }
-            });
+        int size = contracts.size() / TASK_SIZE;
+        int index = 0;
+        for (int i = 0; i < TASK_SIZE; i++) {
+            if (i < TASK_SIZE - 1) {
+                list.add(contracts.subList(index, index + size));
+                index = index + size;
+            } else {
+                list.add(contracts.subList(index, contracts.size()));
+            }
         }
-        return files;
+
+        return list;
     }
 
     /**
@@ -147,13 +137,47 @@ public class S3Client {
      */
     public List<File> downloadByTransferMgr(TransferManager manager, List<Contract> contracts, long timeout) {
         List<File> files = new ArrayList<>();
+        List<Future<List<File>>> futures = new ArrayList<>();
         ITransferMgrBuilder builder = new TransferMgrBuilderImpl();
 
-        for (Contract contract : contracts) {
-            String fileName = getFileName(contract.getS3Key());
-            File file = builder.getObject(manager, contract.getS3Bucket(), contract.getS3Key(), fileName, timeout);
-            files.add(file);
+        List<List<Contract>> taskList = splitTasks(contracts);
+
+        for (List<Contract> task : taskList) {
+            ListenableFuture<List<File>> future = service.submit(new Callable<List<File>>() {
+                @Override
+                public List<File> call() {
+                    List<File> files = new ArrayList<>();
+                    for (Contract contract : task) {
+                        String fileName = getFileName(contract.getS3Key());
+                        File file = builder.getObject(manager, contract.getS3Bucket(), contract.getS3Key(), fileName, timeout);
+                        files.add(file);
+                    }
+                    return files;
+                }
+            });
+            Futures.addCallback(future, new FutureCallback<List<File>>() {
+                @Override
+                public void onSuccess(@Nullable List<File> files) {
+                    log.info("[TransferMgrBuilderImpl] ============> Download (" + files.size() + ") items");
+                }
+
+                @Override
+                public void onFailure(Throwable e) {
+                    log.error("[S3Client] ========> Exception:", e);
+                }
+            });
+            futures.add(future);
         }
+
+        try {
+            for (Future<List<File>> future : futures) {
+                List<File> subFiles = future.get();
+                files.addAll(subFiles);
+            }
+        } catch (Exception e) {
+            log.error("[S3Client] ========> Exception:", e);
+        }
+
         return files;
     }
 
