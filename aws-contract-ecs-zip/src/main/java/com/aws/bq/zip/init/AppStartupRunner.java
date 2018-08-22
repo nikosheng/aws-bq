@@ -91,7 +91,7 @@ public class AppStartupRunner implements CommandLineRunner, EnvironmentAware {
                 }
             });
 
-            List<File> files = s3Client.downloadByTransferMgr(manager, contracts, 5000);
+            List<File> files = s3Client.downloadByTransferMgr(manager, contracts);
             String generatedZipFile = String.format("bq-contracts-%d.%s", System.currentTimeMillis(), "zip");
             ZipFileResult result = Utils.zipFiles(files, generatedZipFile);
             String s3Key = ZIP_S3_PREFIX + generatedZipFile;

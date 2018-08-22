@@ -51,10 +51,25 @@ public class TransferMgrBuilderImpl implements ITransferMgrBuilder {
     }
 
     @Override
-    public File getObject(TransferManager manager, String bucketName, String key, long timeout) {
+    public File getObject(TransferManager manager, String bucketName, String key, String fileName, long timeout) {
         try {
-            File file = new File(key.substring(key.lastIndexOf("/") + 1));
+            File file = new File(fileName);
             Download download = manager.download(new GetObjectRequest(bucketName, key), file, timeout);
+            download.waitForCompletion();
+            if (download.getState() == Transfer.TransferState.Completed) {
+                return file;
+            }
+        } catch (Exception e) {
+            log.error("[TransferMgrBuilderImpl] ========> Exception:", e);
+        }
+        return null;
+    }
+
+    @Override
+    public File getObject(TransferManager manager, String bucketName, String key, String fileName) {
+        try {
+            File file = new File(fileName);
+            Download download = manager.download(new GetObjectRequest(bucketName, key), file);
             download.waitForCompletion();
             if (download.getState() == Transfer.TransferState.Completed) {
                 return file;
@@ -68,20 +83,5 @@ public class TransferMgrBuilderImpl implements ITransferMgrBuilder {
     @Override
     public URL getUrl(TransferManager manager, String bucket, String key) {
         return manager.getAmazonS3Client().getUrl(bucket, key);
-    }
-
-    @Override
-    public File getObject(TransferManager manager, String bucketName, String key) {
-        try {
-            File file = new File(key.substring(key.lastIndexOf("/") + 1));
-            Download download = manager.download(new GetObjectRequest(bucketName, key), file);
-            download.waitForCompletion();
-            if (download.getState() == Transfer.TransferState.Completed) {
-                return file;
-            }
-        } catch (Exception e) {
-            log.error("[TransferMgrBuilderImpl] ========> Exception:", e);
-        }
-        return null;
     }
 }

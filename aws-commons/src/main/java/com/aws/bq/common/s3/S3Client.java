@@ -100,7 +100,8 @@ public class S3Client {
         ITransferMgrBuilder builder = new TransferMgrBuilderImpl();
 
         for (Contract contract : contracts) {
-            File file = builder.getObject(manager, contract.getS3Bucket(), contract.getS3Key());
+            String fileName = getFileName(contract.getS3Key());
+            File file = builder.getObject(manager, contract.getS3Bucket(), contract.getS3Key(), fileName);
             files.add(file);
         }
         return files;
@@ -118,7 +119,8 @@ public class S3Client {
         ITransferMgrBuilder builder = new TransferMgrBuilderImpl();
 
         for (Contract contract : contracts) {
-            File file = builder.getObject(manager, contract.getS3Bucket(), contract.getS3Key(), timeout);
+            String fileName = getFileName(contract.getS3Key());
+            File file = builder.getObject(manager, contract.getS3Bucket(), contract.getS3Key(), fileName, timeout);
             files.add(file);
         }
         return files;
@@ -146,5 +148,14 @@ public class S3Client {
     public URL getURL(TransferManager manager, String bucket, String key) {
         ITransferMgrBuilder builder = new TransferMgrBuilderImpl();
         return builder.getUrl(manager, bucket, key);
+    }
+
+    /**
+     * 获取文件名
+     * @param s3Key
+     * @return
+     */
+    private String getFileName(String s3Key) {
+        return s3Key.contains("/") ? s3Key.substring(s3Key.lastIndexOf("/") + 1) : s3Key;
     }
 }

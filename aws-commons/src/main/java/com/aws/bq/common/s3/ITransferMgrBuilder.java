@@ -39,19 +39,21 @@ public interface ITransferMgrBuilder {
      * @param manager
      * @param bucketName
      * @param key
+     * @param fileName
      * @return
      */
-    File getObject(TransferManager manager, String bucketName, String key);
+    File getObject(TransferManager manager, String bucketName, String key, String fileName);
 
     /**
      * 获取对象
      * @param manager
      * @param bucketName
      * @param key
+     * @param fileName
      * @param timeout
      * @return
      */
-    File getObject(TransferManager manager, String bucketName, String key, long timeout);
+    File getObject(TransferManager manager, String bucketName, String key, String fileName, long timeout);
 
     /**
      * 获取S3对象URL
