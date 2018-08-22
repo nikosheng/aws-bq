@@ -2,13 +2,12 @@ package com.aws.bq.zip.init;
 
 import com.alibaba.fastjson.JSONObject;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.PutObjectResult;
-import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.transfer.TransferManager;
+import com.amazonaws.services.s3.transfer.model.UploadResult;
 import com.aws.bq.common.model.Contract;
 import com.aws.bq.common.model.ZipFileResult;
-import com.aws.bq.common.model.vo.ContractResponseVO;
-import com.aws.bq.common.model.vo.S3ObjectFileVO;
 import com.aws.bq.common.model.vo.base.MessageVO;
+import com.aws.bq.common.s3.S3Client;
 import com.aws.bq.common.util.ECSUtils;
 import com.aws.bq.common.util.S3Utils;
 import com.aws.bq.common.util.SNSUtils;
@@ -17,7 +16,6 @@ import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -45,6 +43,8 @@ public class AppStartupRunner implements CommandLineRunner, EnvironmentAware {
     private RestTemplate restTemplate;
     @Autowired
     private AmazonS3 amazonS3;
+    @Autowired
+    private TransferManager manager;
 
     @Value("${amazon.s3.bucket}")
     private String BUCKET_NAME;
@@ -65,6 +65,8 @@ public class AppStartupRunner implements CommandLineRunner, EnvironmentAware {
     @Override
     public void run(String... args) throws Exception {
         log.debug("[AppStartupRunner] =========> The app is running......");
+
+        S3Client s3Client = S3Utils.getS3Client();
 
         try {
             JSONObject jsonObject = JSONObject.parseObject(parameters);
@@ -89,23 +91,13 @@ public class AppStartupRunner implements CommandLineRunner, EnvironmentAware {
                 }
             });
 
-            List<File> files = Lists.transform(contracts, new Function<Contract, File>() {
-                        @Override
-                        public File apply(@Nullable Contract contract) {
-                            log.info("[AppStartupRunner] =========> " + contract.getS3Bucket() + " : " + contract.getS3Key());
-                            S3Object object = S3Utils.getObject(amazonS3, contract.getS3Bucket(), contract.getS3Key());
-                            S3ObjectFileVO vo = S3Utils.getFileFromS3Object(object);
-                            return S3Utils.convertFromS3Object(object, vo.getFileName());
-                        }
-                    }
-            );
-
+            List<File> files = s3Client.downloadByTransferMgr(manager, contracts, 5000);
             String generatedZipFile = String.format("bq-contracts-%d.%s", System.currentTimeMillis(), "zip");
             ZipFileResult result = Utils.zipFiles(files, generatedZipFile);
             String s3Key = ZIP_S3_PREFIX + generatedZipFile;
             if (result.isSuccess()) {
-                PutObjectResult res = S3Utils.putObject(amazonS3, BUCKET_NAME, s3Key, generatedZipFile);
-                URL url = S3Utils.getUrl(amazonS3, BUCKET_NAME, s3Key);
+                UploadResult res = s3Client.uploadByTransferMgr(manager, BUCKET_NAME, s3Key, new File(generatedZipFile));
+                URL url = s3Client.getURL(manager, BUCKET_NAME, s3Key);
                 log.debug("[AppStartupRunner] =========> Path: " + url.toString());
                 // 发送压缩后的文件下载链接到SNS
                 log.debug("[AppStartupRunner] =========> Send Message to SNS... Topic: " + SNS_TOPIC_ARN);

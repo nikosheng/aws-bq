@@ -5,6 +5,8 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.BucketLifecycleConfiguration;
 import com.amazonaws.services.s3.model.lifecycle.LifecycleFilter;
 import com.amazonaws.services.s3.model.lifecycle.LifecyclePrefixPredicate;
+import com.amazonaws.services.s3.transfer.TransferManager;
+import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -34,5 +36,11 @@ public class AmazonConfiguration {
         BucketLifecycleConfiguration configuration = new BucketLifecycleConfiguration().withRules(rule);
         amazonS3.setBucketLifecycleConfiguration(BUCKET_NAME, configuration);
         return amazonS3;
+    }
+
+    @Bean
+    public TransferManager transferManager() {
+        TransferManager manager = TransferManagerBuilder.standard().build();
+        return manager;
     }
 }
