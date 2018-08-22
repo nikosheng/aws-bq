@@ -10,14 +10,10 @@ import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.Upload;
 import com.amazonaws.services.s3.transfer.model.UploadResult;
 import com.aws.bq.common.s3.ITransferMgrBuilder;
-import com.google.common.util.concurrent.*;
 import lombok.extern.slf4j.Slf4j;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.io.File;
 import java.net.URL;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
 
 /**
  * @Description:

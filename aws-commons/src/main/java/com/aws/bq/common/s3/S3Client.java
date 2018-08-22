@@ -111,13 +111,15 @@ public class S3Client {
         return downloadByTransferMgr(manager, contracts, 0);
     }
 
-    private List<List<Contract>> splitTasks(List<Contract> contracts) {
+    private List<List<Contract>> splitTasks(List<Contract> contracts, int total) {
         List<List<Contract>> list = new ArrayList<>();
 
-        int size = contracts.size() / TASK_SIZE;
+        int len = contracts.size() < total ? contracts.size() : total;
+        int size = contracts.size() < total ? 1 : contracts.size() / total;
+
         int index = 0;
-        for (int i = 0; i < TASK_SIZE; i++) {
-            if (i < TASK_SIZE - 1) {
+        for (int i = 0; i < len; i++) {
+            if (i < len - 1) {
                 list.add(contracts.subList(index, index + size));
                 index = index + size;
             } else {
@@ -140,7 +142,7 @@ public class S3Client {
         List<Future<List<File>>> futures = new ArrayList<>();
         ITransferMgrBuilder builder = new TransferMgrBuilderImpl();
 
-        List<List<Contract>> taskList = splitTasks(contracts);
+        List<List<Contract>> taskList = splitTasks(contracts, TASK_SIZE);
 
         for (List<Contract> task : taskList) {
             ListenableFuture<List<File>> future = service.submit(new Callable<List<File>>() {
