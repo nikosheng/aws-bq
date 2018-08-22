@@ -2,18 +2,25 @@ package com.aws.bq.common.s3;
 
 import com.amazonaws.event.ProgressListener;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectResult;
+import com.amazonaws.services.s3.transfer.Download;
+import com.amazonaws.services.s3.transfer.Transfer;
 import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.model.UploadResult;
 import com.aws.bq.common.model.Contract;
 import com.aws.bq.common.s3.impl.S3BuilderImpl;
 import com.aws.bq.common.s3.impl.TransferMgrBuilderImpl;
+import com.google.common.util.concurrent.*;
 import lombok.extern.slf4j.Slf4j;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
 
 /**
  * @Description:
@@ -22,6 +29,8 @@ import java.util.List;
  */
 @Slf4j
 public class S3Client {
+
+    private final ListeningExecutorService service = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(10));
 
     private S3Client(){}
 
@@ -101,8 +110,30 @@ public class S3Client {
 
         for (Contract contract : contracts) {
             String fileName = getFileName(contract.getS3Key());
-            File file = builder.getObject(manager, contract.getS3Bucket(), contract.getS3Key(), fileName);
-            files.add(file);
+            ListenableFuture<File> future = service.submit(new Callable<File>() {
+                @Override
+                public File call() {
+                    try {
+                        return builder.getObject(manager, contract.getS3Bucket(), contract.getS3Key(), fileName);
+                    } catch (Exception e) {
+                        log.error("[S3Client] ========> Exception:", e);
+                    }
+                    return null;
+                }
+            });
+
+            Futures.addCallback(future, new FutureCallback<File>() {
+                @Override
+                public void onSuccess(@Nullable File file) {
+                    files.add(file);
+                    log.info("[TransferMgrBuilderImpl] ============> Upload Success: " + file.getName());
+                }
+
+                @Override
+                public void onFailure(Throwable throwable) {
+                    log.error("[TransferMgrBuilderImpl] ============> Upload Failed: ", throwable);
+                }
+            });
         }
         return files;
     }
