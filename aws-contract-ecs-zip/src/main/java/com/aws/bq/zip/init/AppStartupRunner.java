@@ -108,7 +108,7 @@ public class AppStartupRunner implements CommandLineRunner, EnvironmentAware {
         } catch (Exception e) {
             log.error("[AppStartupRunner] =========> Exception:", e);
         } finally {
-            ECSUtils.stopAllTask(ECS_CLUSTER_NAME, ECS_TASK_BQ_TAG);
+//            ECSUtils.stopAllTask(ECS_CLUSTER_NAME, ECS_TASK_BQ_TAG);
         }
     }
 

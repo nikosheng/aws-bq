@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.net.URL;
+import java.net.URLDecoder;
 
 /**
  * @Description:
@@ -26,6 +27,7 @@ public class TransferMgrBuilderImpl implements ITransferMgrBuilder {
     @Override
     public UploadResult putObject(TransferManager manager, String bucketName, String key, File file) {
         try {
+            key = URLDecoder.decode(key, "UTF-8");
             PutObjectRequest request = new PutObjectRequest(bucketName, key, file)
                     .withCannedAcl(CannedAccessControlList.PublicRead);
             Upload upload = manager.upload(request);
@@ -39,6 +41,7 @@ public class TransferMgrBuilderImpl implements ITransferMgrBuilder {
     @Override
     public UploadResult putObject(TransferManager manager, String bucketName, String key, File file, ProgressListener progressListener) {
         try {
+            key = URLDecoder.decode(key, "UTF-8");
             PutObjectRequest request = new PutObjectRequest(bucketName, key, file)
                     .withCannedAcl(CannedAccessControlList.PublicRead)
                     .withGeneralProgressListener(progressListener);
@@ -54,6 +57,7 @@ public class TransferMgrBuilderImpl implements ITransferMgrBuilder {
     public File getObject(TransferManager manager, String bucketName, String key, String fileName, long timeout) {
         try {
             File file = new File(fileName);
+            key = URLDecoder.decode(key, "UTF-8");
             Download download = manager.download(new GetObjectRequest(bucketName, key), file, timeout);
             download.waitForCompletion();
             if (download.getState() == Transfer.TransferState.Completed) {
